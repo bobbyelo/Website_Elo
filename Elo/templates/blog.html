@@ -2,9 +2,108 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eloise's Portfolio</title>
+    <style>
+        body {
+            background-color: black;
+            color: white;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            height: 100vh;
+            width: 100vw;
+        }
+        #content {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 20px;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        .line {
+            display: flex;
+            margin: 0;
+        }
+        .line-text {
+            font-size: 1.2em; /* Adjust the size as needed */
+            white-space: pre; /* Preserve spaces and line breaks */
+            margin: 0;
+        }
+    </style>
 </head>
 <body>
-<h1>Blog with cool projects</h1>
+    <div id="content">
+        <div class="line"><p id="line1" class="line-text">000 > About me</p></div>
+        <div class="line"><p id="line2" class="line-text">001 > Product design</p></div>
+        <div class="line"><p id="line3" class="line-text">002 > Space design</p></div>
+        <div class="line"><p id="line4" class="line-text">003 > Graphic design</p></div>
+        <div class="line"><p id="line5" class="line-text">004 > Other</p></div>
+    </div>
+
+    <script>
+        const texts = {
+            english: [
+                "000 > About me",
+                "001 > Product design",
+                "002 > Space design",
+                "003 > Graphic design",
+                "004 > Other"
+            ],
+            german: [
+                "000 > Über mich",
+                "001 > Produktdesign",
+                "002 > Raumgestaltung",
+                "003 > Grafikdesign",
+                "004 > Andere"
+            ],
+            french: [
+                "000 > À propos de moi",
+                "001 > Design de produit",
+                "002 > Design d'espace",
+                "003 > Design graphique",
+                "004 > Autre"
+            ],
+            spanish: [
+                "000 > Sobre mí",
+                "001 > Diseño de producto",
+                "002 > Diseño de espacios",
+                "003 > Diseño gráfico",
+                "004 > Otro"
+            ]
+        };
+
+        let currentLanguage = 'english';
+
+        function changeLanguage() {
+            const languages = ['english', 'german', 'french', 'spanish'];
+            const currentIndex = languages.indexOf(currentLanguage);
+            currentLanguage = languages[(currentIndex + 1) % languages.length];
+            updateText();
+        }
+
+        function updateText() {
+            document.getElementById('line1').innerText = texts[currentLanguage][0];
+            document.getElementById('line2').innerText = texts[currentLanguage][1];
+            document.getElementById('line3').innerText = texts[currentLanguage][2];
+            document.getElementById('line4').innerText = texts[currentLanguage][3];
+            document.getElementById('line5').innerText = texts[currentLanguage][4];
+        }
+
+        document.body.addEventListener('click', function(event) {
+            if (event.target === document.body || event.target === document.getElementById('content')) {
+                changeLanguage();
+            }
+        });
+
+        window.onload = function() {
+            updateText();
+        }
+    </script>
 </body>
 </html>
