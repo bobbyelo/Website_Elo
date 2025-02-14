@@ -40,7 +40,7 @@
 <body>
     <div id="content">
         <div class="line"><p id="line1" class="line-text">000 > About me</p></div>
-        <div class="line"><p id="line2" class="line-text"><a href="product-design.html" style="color: white; text-decoration: none;">001 > Product design</a></p></div>
+        <div class="line"><p id="line2" class="line-text">001 > Product design</p></div>
         <div class="line"><p id="line3" class="line-text">002 > Space design</p></div>
         <div class="line"><p id="line4" class="line-text">003 > Graphic design</p></div>
         <div class="line"><p id="line5" class="line-text">004 > Other</p></div>
