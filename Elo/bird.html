@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flappy Portfolio</title>
+  <style>
+    body {
+      background-color: white;
+      color: black;
+      font-family: Helvetica, sans-serif;
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    canvas {
+      background-color: white;
+    }
+
+    #terminal {
+      position: absolute;
+      top: 70%;
+      left: 10%;
+      max-width: 80%;
+      font-size: 26px;
+      color: blue;
+      white-space: pre-wrap;
+      line-height: 1.4;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="terminal"></div>
+  <canvas id="gameCanvas"></canvas>
+
+  <script>
+    const terminal = document.getElementById("terminal");
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let spacePressCount = 0;
+    let gameStarted = false;
+
+    const bird = {
+      x: canvas.width / 3,
+      y: canvas.height / 2 - 25,
+      width: 50,
+      height: 50,
+      velocity: 0,
+      gravity: 0.4,
+      jumpPower: -7
+    };
+
+    const tubes = [];
+    const tubeWidth = 100;
+    const tubeGap = 200;
+    const tubeSpeed = 2.5;
+    let gameOver = false;
+    let tubesPassed = 0;
+    let tubesCreated = 0;
+
+    function createTubes() {
+      for (let i = 0; i < 4; i++) {
+        let tubeHeight = Math.floor(Math.random() * (canvas.height / 2 / 50)) * 50;
+        tubeHeight = tubeHeight === 0 ? 50 : tubeHeight;
+
+        tubes.push({
+          x: canvas.width + (i * (canvas.width / 5)),
+          topHeight: tubeHeight,
+          bottomY: tubeHeight + tubeGap
+        });
+        tubesCreated++;
+      }
+    }
+
+    function update() {
+      if (!gameStarted || gameOver) return;
+
+      bird.velocity += bird.gravity;
+      bird.y += bird.velocity;
+
+      tubes.forEach(tube => {
+        tube.x -= tubeSpeed;
+      });
+
+      for (let i = 0; i < tubes.length; i++) {
+        if (
+          (bird.x < tubes[i].x + tubeWidth && bird.x + bird.width > tubes[i].x &&
+            (bird.y < tubes[i].topHeight || bird.y + bird.height > tubes[i].bottomY)) ||
+          bird.y + bird.height >= canvas.height || bird.y <= 0
+        ) {
+          gameOver = true;
+          alert("Game Over");
+          window.location.href = window.location.href; // Reload with saved text
+          return;
+        }
+      }
+
+      if (tubesPassed >= 4) {
+        gameOver = true;
+        alert("You Win!");
+        localStorage.removeItem("gameState");
+        window.location.href = "projectpage.html";
+        return;
+      }
+
+      if (tubesCreated < 4) {
+        createTubes();
+      }
+
+      tubes.forEach(tube => {
+        if (tube.x + tubeWidth < bird.x && !tube.passed) {
+          tube.passed = true;
+          tubesPassed++;
+        }
+      });
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.2)";
+      for (let x = 0; x < canvas.width; x += 50) {
+        for (let y = 0; y < canvas.height; y += 50) {
+          ctx.strokeRect(x, y, 50, 50);
+        }
+      }
+
+      ctx.fillStyle = "blue";
+      ctx.fillRect(bird.x, bird.y, bird.width, bird.height);
+
+      ctx.fillStyle = "red";
+      tubes.forEach(tube => {
+        ctx.fillRect(tube.x, 0, tubeWidth, tube.topHeight);
+        ctx.fillRect(tube.x, tube.bottomY, tubeWidth, canvas.height - tube.bottomY);
+      });
+    }
+
+    function gameLoop() {
+      update();
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    document.addEventListener("keydown", function (event) {
+      if (event.code === "Space") {
+        spacePressCount++;
+        bird.velocity = bird.jumpPower;
+
+        if (spacePressCount === 2 && !gameStarted) {
+          gameStarted = true;
+          terminal.classList.add("hidden");
+          createTubes();
+        }
+      }
+    });
+
+    async function typeText(text, delay = 40) {
+      for (let i = 0; i < text.length; i++) {
+        terminal.textContent += text.charAt(i);
+        await new Promise(r => setTimeout(r, delay));
+      }
+    }
+
+    async function conversation() {
+      const savedState = JSON.parse(localStorage.getItem("gameState"));
+
+      if (savedState && savedState.returning) {
+        terminal.textContent = savedState.terminalText;
+        await typeText("> Would you like to play a game? Answer yes or no< ");
+        const play = prompt("Would you like to play a game? (yes or no)").toLowerCase();
+        if (play === "yes") {
+          await typeText(`> Whenever you are ready, press twice the space bar to start the game. If you win, then you will be able to see the projects. Good luck ${savedState.name}!<`);
+        } else {
+          localStorage.removeItem("gameState");
+          window.location.href = "projectpage.html";
+        }
+      } else {
+        await typeText("> Hi, thank you for your interest in my portfolio! What is your name?< ");
+        const name = prompt("What is your name?");
+        terminal.textContent += name + "\n";
+        await typeText(`> Thank you ${name}, I hope you enjoy my portfolio! Would you like to play a game? Answer yes or no< `);
+        const play = prompt("Would you like to play a game? (yes or no)").toLowerCase();
+        if (play === "yes") {
+          await typeText(`> Whenever you are ready, press twice the space bar to start the game. If you win, then you will be able to see the projects. Good luck ${name}!<`);
+          localStorage.setItem("gameState", JSON.stringify({
+            terminalText: terminal.textContent,
+            name: name,
+            returning: true
+          }));
+        } else {
+          window.location.href = "projectpage.html";
+        }
+      }
+    }
+
+    conversation();
+    gameLoop();
+  </script>
+</body>
+</html>

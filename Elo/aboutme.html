@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Portfolio</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden; /* Disable default scrolling */
+    }
+
+    .section {
+      height: 100vh;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    #home {
+      background-color: #e3e3e3;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    #aboutme {
+      background-color: #c3c3c3;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    #start {
+      background-color: #b3b3b3;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    /* Optional: Grid background */
+    .background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: url('https://www.transparenttextures.com/patterns/diag-stripes.png');
+      z-index: -1;
+    }
+
+    .name {
+      font-size: 4rem;
+      color: blue;
+    }
+
+    .description {
+      font-size: 2rem;
+      color: black;
+      width: 80%;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Static background grid -->
+  <div class="background"></div>
+
+  <!-- Section 1: Home -->
+  <div id="home" class="section">
+    <div class="name">Eloise Lobmeyr</div>
+  </div>
+
+  <!-- Section 2: About Me -->
+  <div id="aboutme" class="section">
+    <div class="description">
+      I'm a French-Austrian designer. Graduating in June 2025. My interdisciplinary background spans 3D modeling, craft, and sustainability. I’m exploring how design can impact fashion and production through technology, with a growing interest in biomaterials.
+    </div>
+  </div>
+
+  <!-- Section 3: Start -->
+  <div id="start" class="section">
+    <div class="description">Welcome to My Portfolio. Explore my projects and designs.</div>
+  </div>
+
+  <script>
+    // Variables to track the current section
+    let currentSection = 0;
+    const sections = document.querySelectorAll('.section');
+    const totalSections = sections.length;
+
+    // Scroll event listener
+    window.addEventListener('wheel', function(e) {
+      if (e.deltaY > 0 && currentSection < totalSections - 1) {
+        currentSection++;
+      } else if (e.deltaY < 0 && currentSection > 0) {
+        currentSection--;
+      }
+
+      // Scroll to the target section
+      sections[currentSection].scrollIntoView({ behavior: 'smooth' });
+    }, { passive: true });
+  </script>
+
+</body>
+</html>

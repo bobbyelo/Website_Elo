@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Icons</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: white;
+            position: relative;
+        }
+
+        /* Grid background */
+        .background-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 50px); /* Grid columns based on gridSize */
+            grid-template-rows: repeat(auto-fill, 50px); /* Grid rows based on gridSize */
+            pointer-events: none; /* Prevent grid from interfering with interactions */
+        }
+        .background-grid div {
+            border-right: 1px solid rgba(0, 0, 0, 0.1); /* Vertical grid lines */
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1); /* Horizontal grid lines */
+            width: 50px; /* Grid cell width */
+            height: 50px; /* Grid cell height */
+        }
+
+        /* Icon styling */
+        .icon {
+            position: absolute;
+            transition: transform 0.8s ease-out;
+        }
+
+
+    </style>
+</head>
+<body>
+    <div class="background-grid"></div> <!-- Grid background element -->
+
+    <!-- Header Text -->
+    <div class="header-text">
+        ELOISE LOBMEYR
+    </div>
+
+    <!-- Sub-header Text -->
+    <div class="sub-header-text">
+        view portfolio: fun way = type 1 ; boring way = type 2 ; enjoy
+    </div>
+
+    <script>
+        const gridSize = 50; // Grid size for icon placement
+        const numIcons = 200; // Increased number of icons
+        const iconSources = [
+            "product/images/lampbg.png", // New image placeholder
+            "product/images/colab.png", // New image placeholder
+            "product/images/book.png", // New image placeholder
+            "product/images/Bagicon.png",
+            "product/images/chairbg-05.png",
+            "product/images/weed.png",
+            "product/images/artichoc-04.png"
+        ];
+        const icons = [];
+
+        // Create the grid background dynamically
+        const gridContainer = document.querySelector(".background-grid");
+        const rows = Math.ceil(window.innerHeight / gridSize);
+        const columns = Math.ceil(window.innerWidth / gridSize);
+
+        for (let i = 0; i < rows * columns; i++) {
+            const gridCell = document.createElement("div");
+            gridContainer.appendChild(gridCell);
+        }
+
+        for (let i = 0; i < numIcons; i++) {
+            const icon = document.createElement("img");
+            icon.src = iconSources[Math.floor(Math.random() * iconSources.length)];
+            icon.classList.add("icon");
+
+            // Set width and height for the icons
+            const iconWidth = Math.random() * 80 + 50; // Size range between 50px and 130px
+            const iconHeight = Math.random() * 80 + 50; // Similar size range for height
+            icon.style.width = `${iconWidth}px`;
+            icon.style.height = `${iconHeight}px`;
+
+            // Snap the icon to the grid by using gridSize
+            const gridX = Math.floor(Math.random() * (window.innerWidth / gridSize)) * gridSize;
+            const gridY = Math.floor(Math.random() * (window.innerHeight / gridSize)) * gridSize;
+            
+            icon.style.left = `${gridX}px`;
+            icon.style.top = `${gridY}px`;
+
+            document.body.appendChild(icon);
+            icons.push(icon);
+        }
+
+        document.addEventListener("mousemove", (event) => {
+            icons.forEach(icon => {
+                const iconRect = icon.getBoundingClientRect();
+                const dx = iconRect.left + iconRect.width / 2 - event.clientX;
+                const dy = iconRect.top + iconRect.height / 2 - event.clientY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < 120) {
+                    const angle = Math.atan2(dy, dx);
+                    const moveX = Math.cos(angle) * 200;
+                    const moveY = Math.sin(angle) * 200;
+                    const newX = parseFloat(icon.style.left) + moveX;
+                    const newY = parseFloat(icon.style.top) + moveY;
+
+                    // Keep the icon inside the window and snap to grid
+                    const snappedX = Math.max(0, Math.min(window.innerWidth - icon.width, newX));
+                    const snappedY = Math.max(0, Math.min(window.innerHeight - icon.height, newY));
+
+                    icon.style.left = `${Math.floor(snappedX / gridSize) * gridSize}px`; // Snap to grid
+                    icon.style.top = `${Math.floor(snappedY / gridSize) * gridSize}px`; // Snap to grid
+                }
+            });
+        });
+    </script>
+</body>
+</html>

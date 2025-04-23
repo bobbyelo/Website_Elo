@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrollable Image with Grid</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #fff;
+        }
+
+        .background-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .image-container {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .scrollable-image {
+            width: 100vw;
+            height: auto;
+            display: block;
+        }
+
+        .go-back {
+            position: fixed;
+            top: 40px;
+            left: 40px;
+            font-size: 3rem;
+            color: blue;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .go-back:hover {
+            color: orangered;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="backgroundCanvas" class="background-grid"></canvas>
+
+    <div class="go-back" onclick="history.back()">←</div>
+    
+    <div class="image-container">
+        <img class="scrollable-image" src="product/pdf/prod-01.png" alt="Scrollable Image">
+    </div>
+
+    <script>
+        const canvas = document.getElementById("backgroundCanvas");
+        const ctx = canvas.getContext("2d");
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            drawGrid();
+        }
+
+        function drawGrid() {
+            const gridSize = 50;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = "rgba(0, 0, 0, 0.2)"; // more transparent lines
+            ctx.lineWidth = 0.5;
+
+            for (let x = 0; x < canvas.width; x += gridSize) {
+                for (let y = 0; y < canvas.height; y += gridSize) {
+                    ctx.strokeRect(x, y, gridSize, gridSize);
+                }
+            }
+        }
+
+        window.addEventListener("resize", resizeCanvas);
+        resizeCanvas();
+    </script>
+</body>
+</html>
+

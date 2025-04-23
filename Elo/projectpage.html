@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Godberg&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden; /* Prevent scrolling */
+      font-family: 'Helvetica', sans-serif;
+    }
+
+    .section {
+      height: 100vh;
+      width: 100%;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      cursor: pointer; /* Makes the entire section clickable */
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+    }
+
+    .name {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 4rem;
+      color: blue;
+      font-family: 'Godberg', 'Helvetica', sans-serif;
+      z-index: 1;
+    }
+
+    .floating {
+      position: absolute;
+      cursor: pointer;
+      z-index: 1; /* behind the name */
+    }
+
+    .image-1 {
+      bottom: 3%;
+      left: 40%;
+      animation: rotate 10s linear infinite;
+    }
+
+    .image-2 {
+      bottom: -55%;
+      left: -25%;
+      position: absolute;
+      width: 80%; /* Width as a percentage of the parent container */
+      height: auto; /* Keep aspect ratio intact */
+      animation: rotateCounter 10s linear infinite;
+    }
+
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes rotateCounter {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(-360deg); }
+    }
+
+    .hidden-buttons {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: none; /* Initially hidden */
+      flex-direction: column;
+      align-items: center;
+      z-index: 2;
+    }
+
+    .section:hover .hidden-buttons {
+      display: flex; /* Show buttons when the section is hovered */
+    }
+
+    .hidden-buttons a {
+      color: blue;
+      text-decoration: none;
+      font-size: 4rem;
+      margin: 10px 0;
+      transition: opacity 0.3s ease, color 0.3s ease;
+    }
+
+    .hidden-buttons a:hover {
+      opacity: 0.6;
+      color: #007bff; /* Slightly different color on hover */
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Static background grid -->
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- Section: Home -->
+  <div class="section">
+    <img src="product/images/artichoc-04.png" alt="Bag Icon" class="floating image-1"/>
+    <img src="product/images/artichoc-04.png" alt="Bag Icon" class="floating image-2"/>
+
+    <!-- Hidden buttons that appear on hover -->
+    <div class="hidden-buttons">
+      <a href="craft-tech.html">Craft & Tech</a>
+      <a href="product.html">Product</a>
+      <a href="space.html">Space</a>
+      <a href="graphic.html">Graphic</a>
+      <a href="coding.html">Coding</a>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      drawGrid();
+    }
+
+    const gridSize = 50;
+
+    function drawGrid() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.beginPath();
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.2)";
+      ctx.lineWidth = 1;
+
+      for (let x = 0; x < canvas.width; x += gridSize) {
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+      }
+
+      for (let y = 0; y < canvas.height; y += gridSize) {
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+      }
+
+      ctx.stroke();
+    }
+
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    // Prevent page scrolling entirely
+    window.addEventListener("wheel", (e) => {
+      e.preventDefault();
+    }, { passive: false });
+  </script>
+
+</body>
+</html>

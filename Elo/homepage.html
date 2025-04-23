@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Godberg&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      overflow-x: hidden; /* Prevent horizontal scrolling */
+      overflow-y: auto;
+      scroll-behavior: smooth;
+      font-family: 'Helvetica', sans-serif;
+      transition: transform 1s ease-in-out; /* Smooth transition on transform */
+    }
+
+    .section {
+      height: 100vh;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+
+    #home {
+      background-color: transparent;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    #aboutme {
+      background-color: transparent;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0 10%;
+      text-align: center;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+    }
+
+    .name {
+      position: absolute;
+      top: 37.5%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 8rem;
+      color: blue;
+      font-family: 'Godberg', 'Helvetica', sans-serif;
+      z-index: 1;
+    }
+
+    .floating {
+      position: absolute;
+      cursor: pointer;
+      animation: rotate 10s linear infinite;
+      z-index: 1; /* behind the name */
+    }
+
+    .image-1 {
+      bottom: 10%;
+      left: 10%;
+    }
+
+    .image-2 {
+      bottom: -40%;
+      left: 70%;
+      position: absolute;
+      width: 80%; /* Width as a percentage of the parent container */
+      height: auto; /* Keep aspect ratio intact */
+    }
+
+    #aboutme p {
+      font-size: 3.8rem;
+      color: blue;
+      font-weight: bold; /* Make text bold */
+      text-align: left; /* Align text to the left */
+      width: 100vw; /* Make the paragraph take up the full width of the screen */
+      z-index: 1;
+      padding: 1 1px; /* Optional padding for spacing from the sides */
+      hyphens: none; /* Remove hyphenation */
+    }
+
+    @keyframes rotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Static background grid -->
+  <canvas id="gameCanvas"></canvas>
+
+  <!-- Section 1: Home -->
+  <div id="home" class="section">
+    <canvas id="gameCanvas"></canvas>
+    <img src="product/images/Bagicon.png" alt="Bag Icon" class="floating image-1"/>
+    <div class="name">Eloise Lobmeyr</div>
+  </div>
+
+  <!-- Section 2: About Me -->
+  <div id="aboutme" class="section">
+    <img src="product/images/chairbg-05.png" alt="chairbg-05" class="floating image-2" />
+    <p>
+      I'm a French-Austrian designer. Graduating in June 2025. My interdisciplinary background spans 3D modeling, craft, and sustainability. I’m exploring how design can impact fashion and production through technology, with a growing interest in biomaterials. Now press the space bar.
+    </p>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      drawGrid();
+    }
+
+    const gridSize = 50;
+
+    function drawGrid() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.beginPath();
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.2)";
+      ctx.lineWidth = 1;
+
+      for (let x = 0; x < canvas.width; x += gridSize) {
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+      }
+
+      for (let y = 0; y < canvas.height; y += gridSize) {
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+      }
+
+      ctx.stroke();
+    }
+
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    // Scroll logic (one movement up/down)
+    let isScrolling = false;
+
+    window.addEventListener("wheel", (e) => {
+      if (isScrolling) return;
+
+      const currentScroll = window.scrollY;
+      const windowHeight = window.innerHeight;
+
+      if (e.deltaY > 0 && currentScroll < windowHeight - 10) {
+        isScrolling = true;
+        document.getElementById("aboutme").scrollIntoView({ behavior: "smooth" });
+      } else if (e.deltaY < 0 && currentScroll > 10) {
+        isScrolling = true;
+        document.getElementById("home").scrollIntoView({ behavior: "smooth" });
+      }
+
+      setTimeout(() => {
+        isScrolling = false;
+      }, 1000);
+    }, { passive: true });
+
+    // Spacebar functionality to trigger transition when in "About Me" section
+    document.addEventListener("keydown", (e) => {
+      // Check if spacebar is pressed (key code 32)
+      if (e.code === "Space") {
+        const aboutMeSection = document.getElementById("aboutme");
+        const aboutMeRect = aboutMeSection.getBoundingClientRect();
+
+        // Check if the "About Me" section is visible on the screen
+        if (aboutMeRect.top <= window.innerHeight && aboutMeRect.bottom >= 0) {
+          // Prevent page flickering
+          document.body.style.position = "relative";
+          document.body.style.left = "0";
+          // Trigger page shift to the left without background flicker
+          setTimeout(() => {
+            document.body.style.left = "-100%"; // Slide left
+          }, 0);
+
+          // After the transition, load a new page (replace with your desired HTML path)
+          setTimeout(() => {
+            window.location.href = "bird.html"; // Replace with your actual URL
+          }, 1000); // Ensure this matches the duration of the transition
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>
