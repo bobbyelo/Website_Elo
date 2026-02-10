@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peanut Project 2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Godberg&display=swap" rel="stylesheet" />
+    <style>
+        /* Hide Scrollbar */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        html {
+            scrollbar-width: none;
+        }
+
+        /* --- RESET & TYPOGRAPHY --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body,
+        html {
+            width: 100%;
+            height: 100%;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #333;
+            background-color: transparent;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        /* --- HEADER SECTION --- */
+        #header-section {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 120px;
+            /* White Gradient Overlay - More Transparent */
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.7) 40%, transparent 100%);
+
+            border-bottom: none;
+            z-index: 10000;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 10px 40px 0 40px;
+            box-sizing: border-box;
+            pointer-events: none;
+        }
+
+        #header-section>* {
+            pointer-events: auto;
+        }
+
+
+
+        #project-nav {
+            display: flex;
+            gap: 30px;
+        }
+
+        /* Left-aligned name link - no centering */
+        .nav-item.name-link {
+            align-items: flex-start;
+            /* Bold with hover effect only for name */
+            font-weight: bold;
+        }
+
+        /* Reserve Width based on Bold Text for name only */
+        .nav-item.name-link::after {
+            content: attr(data-text);
+            font-weight: bold;
+            height: 0;
+            overflow: hidden;
+            visibility: hidden;
+        }
+
+        .nav-item.name-link:hover {
+            font-weight: normal;
+            /* Not bold on hover */
+        }
+
+        .nav-item {
+            font-family: 'Godberg', 'Helvetica', sans-serif;
+            font-size: 1.2rem;
+            color: #783519;
+            /* Matches garbage text */
+            text-decoration: none;
+            line-height: 1.0;
+            transition: none;
+            /* No bold/hover for project titles */
+            font-weight: normal;
+        }
+
+        /* Active page title is bold */
+        .nav-item.active {
+            font-weight: bold;
+        }
+
+        /* Project Title below header */
+        .project-title-container {
+            position: fixed;
+            top: 140px;
+            /* Below Name */
+            left: 40px;
+            z-index: 1000;
+            padding: 2px 2px;
+            background-color: #fff;
+            mix-blend-mode: difference;
+            display: inline-block;
+        }
+
+        .project-title {
+            font-family: 'Godberg', 'Helvetica', sans-serif;
+            font-size: 1.2rem;
+            color: #000;
+            line-height: 1.0;
+            margin: 0;
+        }
+
+        /* --- FIXED BACKGROUNDS (Static Layer) --- */
+        .fixed-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .fixed-bg {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* Level 2: Pigbag Marble */
+        #bg-level-2 {
+            z-index: -1;
+            opacity: 1;
+        }
+
+        /* Level 4: Carousel */
+        #bg-level-4 {
+            z-index: -2;
+            opacity: 1;
+        }
+
+        /* Carousel Logic: Consistent Tempo */
+        .carousel-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Fill screen */
+            transform: translateX(100%);
+            /* Default: Offscreen Right */
+            /* Linear or Ease-in-out for consistent speed. 2s duration. */
+            transition: transform 2s ease-in-out;
+            z-index: 1;
+        }
+
+        /* Adjust specific slides down if needed */
+        .carousel-slide:nth-child(5),
+        .carousel-slide:nth-child(6) {
+            object-position: center 60%;
+            /* Push image down slightly */
+        }
+
+        .carousel-slide.active {
+            transform: translateX(0);
+            /* Center */
+            z-index: 10;
+        }
+
+        .carousel-slide.exit {
+            transform: translateX(-100%);
+            /* Offscreen Left */
+            z-index: 5;
+        }
+
+        /* --- SCROLL SECTIONS --- */
+        .snap-container {
+            width: 100%;
+            position: relative;
+            z-index: 10;
+            margin-top: 0;
+            /* Was Header Space */
+        }
+
+        .section {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        .fixed-bg {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* Level 2: Pigbag Marble */
+        #bg-level-2 {
+            z-index: -1;
+            opacity: 1;
+        }
+
+        /* Level 4: Carousel */
+        #bg-level-4 {
+            z-index: -2;
+            opacity: 1;
+        }
+
+        /* Carousel Logic: Consistent Tempo */
+        .carousel-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Fill screen */
+            transform: translateX(100%);
+            /* Default: Offscreen Right */
+            /* Linear or Ease-in-out for consistent speed. 2s duration. */
+            transition: transform 2s ease-in-out;
+            z-index: 1;
+        }
+
+        /* Adjust specific slides down if needed */
+        .carousel-slide:nth-child(5),
+        .carousel-slide:nth-child(6) {
+            object-position: center 60%;
+            /* Push image down slightly */
+        }
+
+        .carousel-slide.active {
+            transform: translateX(0);
+            /* Center */
+            z-index: 10;
+        }
+
+        .carousel-slide.exit {
+            transform: translateX(-100%);
+            /* Offscreen Left */
+            z-index: 5;
+        }
+
+        /* --- SCROLL SECTIONS --- */
+        .snap-container {
+            width: 100%;
+            position: relative;
+            z-index: 10;
+            margin-top: 0;
+            /* Was Header Space */
+        }
+
+        .section {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- PART 1: HERO (Opaque Slide) --- */
+        .part-1 {
+            background: linear-gradient(to bottom, #00bbff, #48c8ff);
+            z-index: 20;
+        }
+
+        .title-overlay {
+            position: absolute;
+            top: 50%;
+            left: 52%;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+            width: 80%;
+            max-width: 1000px;
+            height: auto;
+            opacity: 0;
+            animation: fadeTitle 1.5s ease forwards 0.6s;
+            pointer-events: none;
+        }
+
+        @keyframes fadeTitle {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .clothesline-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .string {
+            position: absolute;
+            top: 20%;
+            left: -10%;
+            width: 120%;
+            height: 2px;
+            background: linear-gradient(180deg, rgba(206, 191, 191, 0.8), rgba(30, 30, 30, 0.9));
+            filter: blur(0.9px);
+            transform: rotate(-1deg);
+        }
+
+        .hanger-assembly {
+            position: absolute;
+            z-index: 6;
+            transform-origin: top center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #bag-1 {
+            animation: windSwing 3s infinite alternate, carouselCycle 10s linear infinite;
+        }
+
+        #bag-2 {
+            margin-left: 5%;
+            animation: windSwing 3s infinite alternate-reverse, carouselCycle 10s linear infinite;
+            animation-delay: 0s, -5s;
+        }
+
+        @keyframes carouselCycle {
+
+            0%,
+            40% {
+                left: 20%;
+                top: 15%;
+                animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+            }
+
+            42% {
+                left: 20.5%;
+                top: 15%;
+                animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0);
+            }
+
+            50% {
+                left: -80%;
+                top: 19%;
+            }
+
+            50.01% {
+                left: 120%;
+                top: 11%;
+            }
+
+            90% {
+                left: 120%;
+                top: 11%;
+                animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+            }
+
+            92% {
+                left: 120.5%;
+                top: 11%;
+                animation-timing-function: cubic-bezier(0.5, 0, 0.75, 0);
+            }
+
+            100% {
+                left: 20%;
+                top: 15%;
+            }
+        }
+
+        @keyframes windSwing {
+            0% {
+                transform: rotate(1deg);
+            }
+
+            100% {
+                transform: rotate(-1deg);
+            }
+        }
+
+        .hanging-bag {
+            display: block;
+            width: 900px;
+            height: auto;
+            margin-top: -130px;
+        }
+
+        #bag-2 .hanging-bag {
+            width: 600px;
+            margin-top: -85px;
+        }
+
+        #bag-2 .clothespin-img {
+            left: 20px;
+        }
+
+        .clothespin-img {
+            width: auto;
+            height: 140px;
+            z-index: 8;
+            position: relative;
+            left: -15px;
+            margin-bottom: -10px;
+            filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.3)) brightness(0.8);
+        }
+
+
+        /* --- PART 2: Transparent Window --- */
+        .part-2 {
+            background-color: transparent;
+            z-index: 20;
+        }
+
+        /* --- PART 3: Floating Card (Beige) --- */
+        .part-3 {
+            background-color: transparent;
+            z-index: 20;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .part-3-card {
+            width: 100%;
+            height: 85vh;
+            /* Floating Card Height */
+            background-color: #fff5f0;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.1);
+
+            padding: 0;
+            /* Text touches edges */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-start;
+            overflow: hidden;
+            /* Ensure text clips clearly at edges if exaggerated */
+        }
+
+        .text-part-3 {
+            color: #783519;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-weight: 600;
+            font-size: 2.8rem;
+            line-height: 1.0;
+            width: 100%;
+            height: 100%;
+            /* Fill the card */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            /* Top vs Bottom */
+
+            letter-spacing: -0.02em;
+        }
+
+        .text-group-top {
+            text-align: left;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+
+        .text-group-bottom {
+            text-align: right;
+            /* Align Right */
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            align-self: flex-end;
+            /* Ensure right alignment logic flows */
+        }
+
+        .text-part-3 p {
+            margin: 0;
+            margin-bottom: 2rem;
+        }
+
+        .thin-text {
+            font-weight: 300;
+            /* Thin font */
+            opacity: 0.9;
+        }
+
+        /* --- PART 4: Transparent Window --- */
+        .part-4 {
+            background-color: transparent;
+            z-index: 20;
+        }
+
+        /* --- PART 5: Full Screen Flex Masonry --- */
+        .part-5 {
+            background-color: #fff;
+            z-index: 20;
+            padding: 0;
+            display: block;
+            height: auto;
+            /* Allow exact fit */
+            min-height: 0;
+        }
+
+        #grid-container {
+            display: grid;
+            /* Strict Grid: No gaps possible */
+            grid-template-columns: repeat(auto-fit, minmax(8vw, 1fr));
+            grid-auto-rows: 10vh;
+            gap: 0;
+            grid-auto-flow: dense;
+            /* Vital: Fills holes */
+            width: 100%;
+            background-color: transparent;
+        }
+
+        .grid-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            margin: 0;
+            padding: 0;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+            background-color: #eee;
+        }
+
+        /* Messy Spans */
+        /* Messy Spans - COLUMNS ONLY for aligned bottom */
+        .grid-img:nth-child(4n) {
+            grid-column: span 2;
+        }
+
+        .grid-img:nth-child(7n) {
+            grid-column: span 3;
+        }
+
+        .grid-img:nth-child(11n) {
+            grid-column: span 2;
+        }
+
+
+
+        .grid-img.visible {
+            opacity: 1;
+        }
+
+        /* --- PART 5 STYLING --- */
+        .part-5 {
+            background-color: #fff5f0;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 2;
+        }
+
+        .part-5-text {
+            /* Aggressive: text touches borders */
+            padding: 0;
+            width: 100%;
+            color: #783519;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-weight: 600;
+            font-size: 1.8rem;
+            line-height: 1.2;
+            text-align: justify;
+            text-justify: inter-word;
+        }
+
+        .part-5-text.top {
+            margin-bottom: 0;
+        }
+
+        .part-5-text.bottom {
+            margin-top: 0;
+        }
+
+        /* --- PART 6: Transparent Window --- */
+        .part-6 {
+            background-color: transparent;
+            width: 100%;
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- HEADER SECTION -->
+    <div id="header-section">
+        <a href="../../intro.html" class="nav-item" data-text="Eloise Lobmeyr">Eloise Lobmeyr</a>
+        <div id="project-nav">
+            <a href="peanut2.html" class="nav-item active" data-text="Crafting Technologies">Crafting Technologies</a>
+            <a href="#" class="nav-item" data-text="CPS">CPS</a>
+            <a href="../ddw/ddw.html" class="nav-item" data-text="Design Dutch Week">Design Dutch Week</a>
+            <a href="../FSM/spaghetti.html" class="nav-item" data-text="Flying
+                spaghetti monster">Flying
+                spaghetti monster</a>
+        </div>
+    </div>
+
+
+    <script>
+        // Play Button Generator DISABLED for Retro Mode
+    </script>
+
+    <!-- FIXED BACKGROUND: Part 6 (Front Views) - Z -3 -->
+    <div class="fixed-container" id="bg-level-6" style="opacity: 0; z-index: -3;">
+        <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/peanuts/images_peanuts/lpart6"
+            style="height: 100%; width: 100%; object-fit: cover; display: block;">
+    </div>
+
+    <!-- FIXED BACKGROUND: Part 4 (Carousel) - Z -2 -->
+    <div class="fixed-container" id="bg-level-4">
+        <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/peanuts/images_peanuts/beaubag (1)"
+            class="carousel-slide active">
+        <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/peanuts/images_peanuts/beaubag (2)"
+            class="carousel-slide">
+        <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/peanuts/images_peanuts/pigbag marblebg"
+            class="carousel-slide">
+        <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/peanuts/images_peanuts/P52"
+            class="carousel-slide">
+        <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/peanuts/images_peanuts/beaubag (5)"
+            class="carousel-slide">
+        <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/peanuts/images_peanuts/P54"
+            class="carousel-slide">
+    </div>
+
+    <!-- FIXED BACKGROUND: Part 2 (Pigbag) - Z -1 -->
+    <div class="fixed-container" id="bg-level-2">
+        <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/peanuts/images_peanuts/beaubag (3)"
+            class="fixed-bg" alt="Pigbag Marble">
+    </div>
+
+    <!-- SCROLL CONTENT -->
+    <div class="snap-container">
+        <!-- PART 1: HERO -->
+        <div class="section part-1" id="sect-1">
+            <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/peanuts/images_peanuts/title-04"
+                class="title-overlay" alt="Project Project">
+            <div class="clothesline-container">
+                <div class="string"></div>
+                <div class="hanger-assembly" id="bag-1"><img
+                        src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/peanuts/images_peanuts/pin"
+                        class="clothespin-img"><img
+                        src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/peanuts/images_peanuts/bah"
+                        class="hanging-bag"></div>
+                <div class="hanger-assembly" id="bag-2"><img
+                        src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/peanuts/images_peanuts/pin"
+                        class="clothespin-img"><img
+                        src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/peanuts/images_peanuts/gab"
+                        class="hanging-bag"></div>
+            </div>
+        </div>
+
+        <!-- PART 2: WINDOW -->
+        <div class="section part-2" id="sect-2"></div>
+
+        <!-- PART 3: FLOATING CARD -->
+        <div class="section part-3" id="sect-3">
+            <div class="part-3-card">
+                <div class="text-part-3">
+                    <div class="text-group-top">
+                        <p>
+                            “Each year, the fashion industry produces 100 billion garments,
+                            with 92 million tonnes
+                            discarded
+                            in landfills. <span class="thin-text">This equates to a garbage
+                                truck’s worth of clothing
+                                being
+                                dumped every second (Ellen MacArthur Foundation,
+                                n.d.).</span>”
+                        </p>
+                        <p>
+                            As a practice-based designer, <span class="thin-text">I position
+                                myself not as a
+                                problem-solver</span>, but as a mediator - connecting
+                            disciplines <span class="thin-text">and using material
+                                experimentation as a way to speculate on
+                                more sustainable futures.</span>
+                        </p>
+                    </div>
+
+                    <p class="text-group-bottom">
+                        How can designers challenge the unsustainable fashion paradigm
+                        through the creation of a garment
+                        combining digital
+                        fabrication tools and craftsmanship technique?
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- PART 4: WINDOW -->
+        <div class="section part-4" id="sect-4"></div>
+
+        <!-- PART 5: FULL SCREEN GRID -->
+        <div class="section part-5" id="sect-5">
+            <div class="part-5-text top">
+                This handbag merges 3D printing and crochet as a small, tangible experiment
+                proving that alternative
+                methods of production are already possible.
+            </div>
+
+            <div id="grid-container">
+                <!-- JS Populated -->
+            </div>
+
+            <div class="part-5-text bottom">
+                The process revealed fragmented systems and clarified the role of the
+                designer as one who connects,
+                questions, and navigates complexity through making.
+            </div>
+        </div>
+
+        <!-- PART 6: SIDE BY SIDE WINDOW -->
+        <div class="section part-6" id="sect-6"></div>
+    </div>
+
+    <script>
+        // --- POPULATE GRID PART 5 ---
+        const gridBox = document.getElementById('grid-container');
+        if (gridBox) {
+            // 1. Generate List: 1-23, 24.1-3, 26-58
+            const images = [];
+            for (let i = 1; i <= 23; i++) images.push(`P${i}.jpg`);
+            images.push('P24.1.jpg', 'P24.2.jpg', 'P24.3.jpg'); // Note: Error handler will try .JPG if these fail
+            // Skip 24, 25. And now skip 55, 56, 57.
+            for (let i = 26; i <= 58; i++) {
+                if (i >= 55 && i <= 57) continue;
+                images.push(`P${i}.jpg`);
+            }
+
+            images.forEach(filename => {
+                const img = document.createElement('img');
+                // Clean base name for Cloudinary
+                const baseName = filename.split('.')[0];
+                img.src = `https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/peanuts/images_peanuts/${baseName}`;
+                img.className = 'grid-img';
+
+                // ERROR HANDLER: Simplified as Cloudinary handles formats
+                img.onerror = function () {
+                    this.style.display = 'none';
+                };
+
+                gridBox.appendChild(img);
+            });
+        }
+
+        // --- GRID ANIMATION OBSERVER ---
+        const sect5Observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                const container = document.getElementById('grid-container');
+                const images = Array.from(container.querySelectorAll('.grid-img'));
+                const containerRect = container.getBoundingClientRect();
+
+                // Calculate diagonal position for each image
+                images.forEach(img => {
+                    const rect = img.getBoundingClientRect();
+                    // Distance from Top-Left relative to container
+                    const relativeX = rect.left - containerRect.left;
+                    const relativeY = rect.top - containerRect.top;
+                    const diagonalDist = relativeX + relativeY;
+
+                    // Delay based on distance: Slower reveal
+                    const delay = diagonalDist * 1.5; // e.g. 1000px -> 1500ms
+
+                    setTimeout(() => {
+                        img.classList.add('visible');
+                    }, delay);
+                });
+
+                sect5Observer.disconnect();
+            }
+        }, { threshold: 0.1 });
+        sect5Observer.observe(document.getElementById('sect-5'));
+
+
+        // --- BACKGROUND SWAPPING LOGIC ---
+        // --- BACKGROUND SWAPPING LOGIC ---
+        const bg2 = document.getElementById('bg-level-2');
+        const bg4 = document.getElementById('bg-level-4');
+        const bg6 = document.getElementById('bg-level-6');
+        const activeSections = new Set();
+
+        const bgObserver = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) activeSections.add(e.target.id);
+                else activeSections.delete(e.target.id);
+            });
+
+            // Logic:
+            // 1. If Part 4 is visible (Window 4), we MUST see Carousel.
+            // 2. If Part 4 is GONE, but Part 5 or 6 is visible:
+            //    - Part 5 (Opaque) hides everything, so we can safely switch to BG6 (Front) behind it.
+            //    - Part 6 (Window 6) reveals BG6.
+            // 3. Else (Part 1,2,3) -> Pigbag.
+
+            if (activeSections.has('sect-4')) {
+                bg4.style.opacity = 1;
+                bg6.style.opacity = 0;
+                bg2.style.opacity = 0;
+            } else if (activeSections.has('sect-5') || activeSections.has('sect-6')) {
+                bg6.style.opacity = 1; // Pre-load BG6 behind Part 5
+                bg4.style.opacity = 0;
+                bg2.style.opacity = 0;
+            } else {
+                bg2.style.opacity = 1;
+                bg4.style.opacity = 0;
+                bg6.style.opacity = 0;
+            }
+        }, { threshold: 0 });
+
+        bgObserver.observe(document.getElementById('sect-4'));
+        bgObserver.observe(document.getElementById('sect-5'));
+        bgObserver.observe(document.getElementById('sect-6'));
+
+
+        // --- CAROUSEL LOGIC ---
+        const slides = document.querySelectorAll('.carousel-slide');
+        let currentSlide = 0;
+
+        // 5000ms Interval (2s slide + 3s hold = 5s total cycle)
+        setInterval(() => {
+            const next = (currentSlide + 1) % slides.length;
+
+            // 1. Exit current slide to LEFT
+            slides[currentSlide].classList.remove('active');
+            slides[currentSlide].classList.add('exit');
+
+            // 2. Prepare next slide (It should be on RIGHT)
+            slides[next].style.transition = 'none'; // Reset
+            slides[next].classList.remove('exit');
+            slides[next].classList.remove('active');
+            void slides[next].offsetWidth; // Reflow
+
+            // 3. Slide next one IN (to Center)
+            slides[next].style.transition = ''; // Restore CSS transition (2s ease-in-out)
+            slides[next].classList.add('active');
+
+            currentSlide = next;
+        }, 5000);
+
+    </script>
+</body>
+
+</html>

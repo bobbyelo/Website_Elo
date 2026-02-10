@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Godberg&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+      /* no scroll */
+      font-family: 'Helvetica', sans-serif;
+      /* CSS Grid Background */
+      background-color: white;
+      background-image:
+        linear-gradient(#eee 1px, transparent 1px),
+        linear-gradient(90deg, #eee 1px, transparent 1px);
+      background-size: 50px 50px;
+      transition: transform 0.5s ease-in-out;
+    }
+
+    body.slide-exit {
+      transform: translateY(-100vh);
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .section {
+      height: 100vh;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+
+    #home {
+      background-color: transparent;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    /* Keep EXACT values you used */
+    .name {
+      position: absolute;
+      top: 37.5%;
+      left: 40%;
+      transform: translate(-50%, -50%);
+      font-size: 8rem;
+      color: blue;
+      font-family: 'Godberg', 'Helvetica', sans-serif;
+      z-index: 1;
+      text-align: left;
+      line-height: 0.9;
+    }
+
+    .floating {
+      position: absolute;
+      cursor: pointer;
+      animation: rotate 11s linear infinite;
+      z-index: 1;
+    }
+
+    .image-1 {
+      bottom: 10%;
+      left: 10%;
+    }
+
+    /* SUBTITLE is now styled here (not inline) */
+    #subtitle {
+      position: absolute;
+      top: 80%;
+      left: 11vw;
+      /* ← fixed left edge */
+      transform: translateY(-50%);
+      /* only vertical centering */
+      width: 90vw;
+
+      font-size: 2rem;
+      color: blue;
+      font-family: 'Helvetica', sans-serif;
+      text-align: left;
+      z-index: 1;
+      white-space: pre-wrap;
+
+      line-height: 1.4;
+      height: 6em;
+      display: block;
+    }
+
+
+    @keyframes rotate {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="gameCanvas"></canvas>
+
+  <div id="home" class="section">
+    <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/images/Bagicon" alt="Bag Icon"
+      class="floating image-1" />
+    <div class="name"> Eloise Lobmeyr</div>
+
+    <!-- No inline styles here -->
+    <div id="subtitle"></div>
+  </div>
+
+  <script>
+    // Grid setup (Now handled by CSS, just need canvas for text)
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      // No drawGrid needed
+    }
+
+    // Transition Logic
+    let isTransitioning = false;
+    function triggerTransition() {
+      if (isTransitioning) return;
+      isTransitioning = true;
+      document.body.classList.add('slide-exit');
+      setTimeout(() => {
+        window.location.href = 'intro.html?animate=true';
+      }, 500);
+    }
+
+    window.addEventListener('wheel', () => triggerTransition());
+
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    // Typing
+    const subtitle = document.getElementById("subtitle");
+    const typingText =
+      "Student @ Imperial College London and Royal College of Art.\n" +
+      "Innovation Design Engineering.\n";
+    let i = 0;
+
+    function typeEffect() {
+      const visible = typingText.slice(0, i);
+      subtitle.textContent = visible;   // ← not "+="
+      i++;
+      if (i <= typingText.length) {
+        setTimeout(typeEffect, 40);
+      } else {
+        subtitle.textContent = typingText;
+        enableNameTyping();
+      }
+    }
+    window.addEventListener("load", typeEffect);
+
+    // Name typing on canvas
+    function enableNameTyping() {
+      let userName = "";
+      let accepting = true;
+      ctx.font = "bold 60px Helvetica";
+      ctx.fillStyle = "blue";
+      ctx.textAlign = "center";
+
+      function redrawName(name) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // clear text only
+        ctx.fillText(name, canvas.width / 2, canvas.height / 2);
+      }
+
+      document.addEventListener("keydown", (e) => {
+        if (!accepting) return;
+        if (e.key === "Enter") {
+          redrawName(userName);
+          accepting = false;
+          // Short delay then trigger transition? 
+          // Or let user press Enter again? 
+          // User request: "presses the Enter key, transition"
+          // Let's trigger it immediately after name entry or on next press if consistent.
+          // For smoothness, let's trigger it on the SAME press that confirms name? 
+          // Or maybe confirm name -> Enable transition listener.
+          triggerTransition();
+        } else if (e.key === "Backspace") {
+          e.preventDefault();
+          userName = userName.slice(0, -1);
+          redrawName(userName);
+        } else if (e.key.length === 1) {
+          userName += e.key;
+          redrawName(userName);
+        }
+      });
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Flying Spaghetti Monster</title>
+    <link href="https://fonts.googleapis.com/css2?family=Godberg&display=swap" rel="stylesheet" />
+    <style>
+        html {
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+
+        /* HEADER STYLES */
+        #header-section {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 140px;
+            /* Subtle Black Gradient Overlay */
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6) 20%, transparent 100%);
+
+            border-bottom: none;
+            z-index: 10000;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 10px 40px 0 40px;
+            box-sizing: border-box;
+            pointer-events: none;
+        }
+
+        #header-section>* {
+            pointer-events: auto;
+        }
+
+        .name {
+            position: fixed;
+            top: 60px;
+            /* Below Header */
+            left: 40px;
+            font-size: 2rem;
+            color: blue;
+            font-family: 'Godberg', 'Helvetica', sans-serif;
+            text-align: left;
+            line-height: 1.0;
+            text-decoration: none;
+            z-index: 10000;
+        }
+
+        #project-nav {
+            display: flex;
+            gap: 30px;
+        }
+
+        /* Left-aligned name link - no centering */
+        .nav-item.name-link {
+            align-items: flex-start;
+            font-weight: bold;
+        }
+
+        .nav-item.name-link::after {
+            content: attr(data-text);
+            font-weight: bold;
+            height: 0;
+            overflow: hidden;
+            visibility: hidden;
+        }
+
+        .nav-item.name-link:hover {
+            font-weight: normal;
+        }
+
+        .nav-item {
+            font-family: 'Godberg', 'Helvetica', sans-serif;
+            font-size: 1.2rem;
+            color: rgb(255, 255, 255);
+            text-decoration: none;
+            line-height: 1.0;
+            transition: none;
+            /* No bold/hover for project titles */
+            font-weight: normal;
+
+            /* Stable Layout Logic */
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Active page title is bold */
+        .nav-item.active {
+            font-weight: bold;
+        }
+
+
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            /* Black to match Part 2 */
+            color: #fff;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* 
+           SCROLL SCENE SETUP 
+        */
+        .scroll-scene {
+            position: relative;
+        }
+
+        .scroll-section {
+            height: 100vh;
+            width: 100%;
+            scroll-snap-align: start;
+        }
+
+        /* --- PART 1 (Oh My Image) --- 
+           Fixed on top initially. z-index 10.
+        */
+        .part-1-container {
+            position: fixed;
+            top: 40px;
+            /* Header Height */
+            left: 0;
+            width: 100%;
+            height: calc(100vh - 40px);
+            z-index: 10;
+            display: flex;
+            pointer-events: none;
+            /* Allow scroll through */
+            overflow: hidden;
+        }
+
+        .split-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* background-color removed for transparency */
+            transition: transform 0.1s linear;
+            /* simple smooth-out if JS lags slightly */
+            will-change: transform;
+        }
+
+        .split-layer img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* 
+           The Cut:
+           "Not in the middle and not completely straight"
+           We use a custom polygon to create a jagged/diagonal seam.
+           Adjust the percentage points to move the cut left/right.
+        */
+
+        /* Left Half (Text Side) */
+        .layer-left {
+            /* No clip-path needed, transparency covers it */
+            transform-origin: left center;
+        }
+
+        /* Right Half (Object Side) */
+        .layer-right {
+            /* No clip-path needed */
+            transform-origin: right center;
+        }
+
+
+
+
+        /* --- PART 2 --- 
+           Revealed underneath Part 1. Fixed as well? 
+           Or acts as the background for the first transition.
+        */
+        .part-2-container {
+            position: fixed;
+            top: 40px;
+            /* Header Height */
+            left: 0;
+            width: 100%;
+            height: calc(100vh - 40px);
+            z-index: 5;
+            /* Below Part 1 */
+            background-color: #000;
+            /* Black background to match image */
+            /* Placeholder bg */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            /* Hidden initially or visible? Visible is fine if covered by P1 */
+            transition: opacity 0.5s;
+        }
+
+        .part-2-content {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            width: 80%;
+            max-width: 1200px;
+            gap: 50px;
+        }
+
+        .p2-poster {
+            flex: 1;
+            /* Takes up remaining space but limited by max-width if desired */
+            display: flex;
+            justify-content: flex-end;
+            /* Push image towards center gap */
+        }
+
+        .p2-poster img {
+            max-width: 100%;
+            height: auto;
+            max-height: 80vh;
+            /* Don't overflow screen vertically */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            /* Slight shadow to lift it off black */
+        }
+
+        .p2-text {
+            flex: 1;
+            color: white;
+            font-family: Arial, sans-serif;
+            /* Requested Font */
+            text-align: left;
+        }
+
+        .p2-text h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            font-weight: bold;
+            display: inline-block;
+            /* Wrap text block */
+            position: relative;
+            /* Anchor for video */
+            overflow: visible;
+        }
+
+        .p2-text p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        #title-video-container {
+            position: absolute;
+            right: -140px;
+            /* Push to the right of the block */
+            top: 50%;
+            transform: translateY(-50%);
+            width: 120px;
+            height: auto;
+            z-index: 10;
+        }
+
+        #title-video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Background Video Elements - Common */
+        .floating-video {
+            position: absolute;
+            width: 150px;
+            /* Base size */
+            height: auto;
+            z-index: 0;
+            opacity: 0;
+            /* Hidden initially */
+            border-radius: 8px;
+            overflow: hidden;
+            pointer-events: none;
+            transition: opacity 2s ease-in-out;
+            /* Only fade, no movement */
+        }
+
+        .floating-video video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Fixed positions as per request */
+        #video-comp-1 {
+            top: 10%;
+            left: 5%;
+        }
+
+        #video-comp-2 {
+            bottom: 10%;
+            right: 5%;
+        }
+
+        /* --- PART 3 --- */
+        .part-3-container {
+            position: fixed;
+            top: 40px;
+            /* Header Height */
+            left: 0;
+            width: 100%;
+            height: calc(100vh - 40px);
+            z-index: 1;
+            /* Lowest, behind Part 2 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+            /* Black to match Part 2 */
+            color: #fff;
+            opacity: 0;
+            /* Hide initially to prevent seeing it through P2 fade */
+            transition: opacity 0.5s;
+        }
+
+        /* Collage Free-form Layout */
+        .collage-grid {
+            width: 95%;
+            max-width: 1600px;
+            height: 90vh;
+            position: relative;
+            /* Anchor for absolute items */
+            display: block;
+            /* No more grid */
+        }
+
+        .c-item {
+            position: absolute;
+            /* Free placement */
+            object-fit: contain;
+            border-radius: 4px;
+            opacity: 0.9;
+            transition: opacity 0.3s, transform 0.3s, z-index 0s;
+            background-color: transparent;
+            /* Remove black box for overlap look */
+        }
+
+        .c-item:hover {
+            opacity: 1;
+            transform: scale(1.1);
+            z-index: 100 !important;
+            /* Always on top on hover */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Specific Placements (Percent based for responsiveness) */
+
+        /* 1. TypoArial (Item 7) - Top Left Big */
+        .item-7 {
+            top: 5%;
+            left: 2%;
+            width: 35%;
+            height: auto;
+            z-index: 5;
+        }
+
+        /* 2. LogoEx (Item 8) - Near Typo */
+        .item-8 {
+            top: 25%;
+            left: 30%;
+            width: 15%;
+            height: auto;
+            z-index: 6;
+        }
+
+        /* 3. LogoEx2 (Item 9) */
+        .item-9 {
+            top: 5%;
+            left: 35%;
+            width: 12%;
+            height: auto;
+            z-index: 4;
+        }
+
+        /* 4. LesCoumeurs (Item 10) */
+        .item-10 {
+            top: 40%;
+            left: 5%;
+            width: 20%;
+            height: auto;
+            z-index: 7;
+        }
+
+        /* 5. Anim 3 (Item 1) - Top Right Area */
+        .item-1 {
+            top: 10%;
+            right: 5%;
+            width: 35%;
+            height: auto;
+            z-index: 3;
+        }
+
+        /* 6. FSM Balls (Item 3) - Center/Bottom overlap */
+        .item-3 {
+            top: 45%;
+            left: 40%;
+            width: 25%;
+            height: auto;
+            z-index: 2;
+        }
+
+        /* 7. Poster 1 (Item 4) - Bottom Left */
+        .item-4 {
+            bottom: 5%;
+            left: 10%;
+            width: 18%;
+            height: auto;
+            z-index: 8;
+        }
+
+        /* 8. Poster 2 (Item 5) - Bottom Center */
+        .item-5 {
+            bottom: 10%;
+            left: 30%;
+            width: 15%;
+            height: auto;
+            z-index: 9;
+        }
+
+        /* 9. Poster 3 (Item 6) - Bottom Right */
+        .item-6 {
+            bottom: 5%;
+            right: 5%;
+            width: 25%;
+            height: auto;
+            z-index: 5;
+        }
+
+        /* 10. Brochure (Item 2) - Scatter fill */
+        .item-2 {
+            top: 60%;
+            right: 30%;
+            width: 15%;
+            height: auto;
+            z-index: 6;
+        }
+
+        /* --- Interstitial --- */
+        .inter-container {
+            position: fixed;
+            top: 40px;
+            /* Header Height */
+            left: 0;
+            width: 100%;
+            height: calc(100vh - 40px);
+            z-index: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+            color: #fff;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .inter-content {
+            width: 80%;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .inter-content h2 {
+            font-size: 3.5rem;
+            /* Big */
+            line-height: 1.2;
+            text-transform: uppercase;
+        }
+
+        /* --- PART 4 --- */
+        .part-4-container {
+            position: fixed;
+            top: 40px;
+            /* Header Height */
+            left: 0;
+            width: 100%;
+            height: calc(100vh - 40px);
+            z-index: 1;
+            display: flex;
+            justify-content: flex-start;
+            /* Left Aligned */
+            align-items: flex-start;
+            /* Top Aligned */
+            background-color: #000;
+            color: #fff;
+            opacity: 0;
+            transition: opacity 0.5s;
+            padding: 8vh 0 0 3vw;
+            /* Top/Left padding */
+            box-sizing: border-box;
+        }
+
+        .part-4-content {
+            cursor: pointer;
+            width: auto;
+            text-align: left;
+        }
+
+        .part-4-content h2 {
+            font-family: Arial, sans-serif;
+            font-size: 2.5rem;
+            /* Balanced size */
+            line-height: 1.2em;
+            padding: 15px 0 15px 0;
+            margin: 0;
+            position: relative;
+            z-index: 4;
+            color: #fff;
+            transition: transform 1s cubic-bezier(.165, .84, .44, 1);
+        }
+
+        /* The Curtains */
+        .part-4-content h2:before,
+        .part-4-content h2:after {
+            content: '';
+            transition: transform .75s cubic-bezier(.165, .84, .44, 1);
+            background-color: #000;
+            position: absolute;
+            left: 0;
+            width: 100%;
+            z-index: 6;
+            height: 52%;
+        }
+
+        .part-4-content h2:before {
+            top: 0;
+            transition-delay: .1s;
+            transform-origin: right;
+            /* Open to Right */
+        }
+
+        .part-4-content h2:after {
+            bottom: 0;
+            transform-origin: right;
+        }
+
+        /* Hover State */
+        .part-4-container:hover h2 {
+            transform: translateX(40px);
+            /* Move Text Right slightly */
+        }
+
+        .part-4-container:hover h2:before,
+        .part-4-container:hover h2:after {
+            transform: translateX(105%);
+            /* Slide Right (Away) */
+        }
+
+        /* iPhone Wrapper - Generic */
+        .mockup-wrapper {
+            position: absolute;
+            z-index: 5;
+            pointer-events: none;
+            transition: transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* --- 1. Center Phone (Animated) --- */
+        .mockup-center {
+            left: 50%;
+            top: 50%;
+            z-index: 6;
+            /* On top */
+            /* Initial: Below Screen */
+            transform: translate(-50%, 150vh);
+        }
+
+        /* Slide Up */
+        .part-4-container[style*="opacity: 1"] .mockup-center {
+            transform: translate(-50%, -50%);
+        }
+
+        /* Center Hover Interaction */
+        .part-4-container:hover .mockup-center {
+            transform: translate(-50%, -50%) scale(1.02);
+        }
+
+        /* --- 2. Top Right Phone (Cropped) --- */
+        .mockup-tr {
+            top: -10%;
+            right: 20%;
+            transform: scale(0.9);
+
+        }
+
+        /* --- 3. Bottom Left Phone (Cropped) --- */
+        .mockup-bl {
+            bottom: -10%;
+            left: 20%;
+            transform: scale(0.9);
+
+        }
+
+        .phone-frame {
+            position: relative;
+            /* Smaller Size */
+            width: 220px;
+            height: 440px;
+            background: #000;
+            border-radius: 30px;
+            /* Frame Construction */
+            box-shadow:
+                0 0 0 8px #1a1a1a,
+                /* Screen Bezel */
+                0 0 0 10px #444,
+                /* Metal Frame */
+                0 25px 50px rgba(0, 0, 0, 0.6);
+            /* Depth Shadow */
+            overflow: hidden;
+        }
+
+        /* Notch */
+        .phone-frame:before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 18px;
+            background: #1a1a1a;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            z-index: 10;
+        }
+
+        .phone-frame video,
+        .phone-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            border-radius: 20px;
+        }
+
+        /* Promo Text (Bottom Right) */
+        .insta-promo {
+            position: absolute;
+            bottom: 5vh;
+            right: 5vw;
+            z-index: 4;
+            text-align: right;
+            cursor: pointer;
+            /* Entrance Animation Container */
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s 1.5s, transform 1s 1.5s;
+            pointer-events: auto;
+        }
+
+        .part-4-container[style*="opacity: 1"] .insta-promo {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .insta-promo h2 {
+            font-family: Arial, sans-serif;
+            font-size: 2.5rem;
+            /* Match Top-Left Exact */
+            line-height: 1.2em;
+            padding: 15px 0 15px 0;
+            margin: 0;
+            position: relative;
+            color: #fff;
+            transition: transform 1s cubic-bezier(.165, .84, .44, 1);
+        }
+
+        /* Curtains for Promo */
+        .insta-promo h2:before,
+        .insta-promo h2:after {
+            content: '';
+            transition: transform .75s cubic-bezier(.165, .84, .44, 1);
+            background-color: #000;
+            position: absolute;
+            left: 0;
+            width: 100%;
+            z-index: 6;
+            height: 52%;
+        }
+
+        .insta-promo h2:before {
+            top: 0;
+            transition-delay: .1s;
+            transform-origin: right;
+        }
+
+        .insta-promo h2:after {
+            bottom: 0;
+            transform-origin: right;
+        }
+
+        /* Hover Interaction - EXACT match to top text */
+        .part-4-container:hover .insta-promo h2 {
+            transform: translateX(40px);
+            /* Move Right */
+        }
+
+        .part-4-container:hover .insta-promo h2:before,
+        .part-4-container:hover .insta-promo h2:after {
+            transform: translateX(105%);
+            /* Slide Right */
+        }
+
+        @media (max-width: 768px) {
+            .mockup-wrapper {
+                position: relative;
+                left: auto;
+                top: auto;
+                transform: none !important;
+                /* Override slide-in for mobile flow */
+                margin-top: 50px;
+            }
+
+            .part-4-container {
+                flex-direction: column;
+                justify-content: center;
+                padding-left: 0;
+                align-items: center;
+            }
+
+            .part-4-content {
+                text-align: center;
+            }
+
+            .insta-promo {
+                position: relative;
+                bottom: auto;
+                right: auto;
+                margin-top: 20px;
+            }
+        }
+
+
+
+        /* --- NAVIGATION --- */
+        #top-nav {
+            position: fixed;
+            top: 3vh;
+            left: 0;
+            width: 100%;
+            padding: 0 40px;
+            box-sizing: border-box;
+            z-index: 9999;
+            /* Very high Z to sit above everything */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-link {
+            font-family: Arial, sans-serif;
+            /* Arial as requested */
+            font-size: 1.2rem;
+            text-decoration: none;
+            color: #ffffff;
+            /* White Base */
+            transition: color 0.1s;
+            /* White Base */
+            transition: color 0.1s;
+            text-align: center;
+            mix-blend-mode: difference;
+        }
+
+        @keyframes rainbowCycle {
+            0% {
+                color: red;
+            }
+
+            50% {
+                color: yellow;
+            }
+
+            100% {
+                color: #39ff14;
+            }
+
+            /* Neon Green */
+        }
+
+        .nav-link:hover {
+            animation: rainbowCycle 0.5s infinite alternate;
+        }
+
+        .nav-link:hover {
+            animation: rainbowCycle 0.5s infinite alternate;
+        }
+
+        /* --- PLAY BUTTON HOME REPLACEMENT --- */
+        #play-button-container {
+            position: fixed;
+            width: 340px;
+            height: 340px;
+            z-index: 10000;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            /* Minimized State Static */
+            top: 25px !important;
+            left: calc(100% - 380px) !important;
+            transform: scale(0.2) !important;
+            transform-origin: top right;
+        }
+
+        .retro-btn {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 80px;
+            font-weight: bold;
+            color: red;
+            background: transparent;
+            border: 4px solid red;
+            padding: 20px 40px;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            text-shadow: 0 0 10px red;
+            box-shadow: 0 0 10px red, inset 0 0 10px red;
+            animation: blink 1.5s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* Slide-in Menu internal to Play Button */
+        #play-button-container .dropdown-content {
+            display: block;
+            opacity: 0;
+            pointer-events: none;
+            position: absolute;
+            top: 475px;
+            right: -30px;
+
+            background-color: transparent;
+            min-width: 400px;
+            z-index: 10000;
+
+            text-align: right;
+            font-family: 'Godberg', 'Helvetica', sans-serif;
+            font-size: 1.2rem;
+            line-height: 1.0;
+
+            transform: scale(5);
+            transform-origin: top right;
+            white-space: nowrap;
+            transition: opacity 0.5s ease 0s;
+        }
+
+        #play-button-container:hover .dropdown-content {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(5);
+        }
+
+        .dropdown-item {
+            display: block;
+            color: blue;
+            font-family: 'Helvetica', sans-serif;
+            font-size: 1.2rem;
+            text-decoration: none;
+            margin-bottom: 10px;
+            background: transparent;
+            padding: 5px;
+        }
+
+        .dropdown-item:hover {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- HEADER SECTION -->
+    <div id="header-section">
+        <a href="../../intro.html" class="nav-item name-link" data-text="Eloise Lobmeyr">Eloise Lobmeyr</a>
+        <div id="project-nav">
+            <a href="../peanuts/peanut2.html" class="nav-item" data-text="Crafting Technologies">Crafting
+                Technologies</a>
+            <a href="#" class="nav-item" data-text="CPS">CPS</a>
+            <a href="../ddw/ddw.html" class="nav-item" data-text="Design Dutch Week">Design Dutch Week</a>
+            <a href="spaghetti.html" class="nav-item active" data-text="Flying spaghetti monster">Flying spaghetti
+                monster</a>
+        </div>
+    </div>
+
+
+    <script>
+        // Generate Play Button Grid (Static) - DISABLED for Retro Mode
+        /*
+        document.addEventListener('DOMContentLoaded', () => {
+             // ...
+        });
+        */
+    </script>
+    <div class="scroll-scene">
+        <div class="scroll-section" id="section-1"></div>
+        <div class="scroll-section" id="section-2"></div>
+        <div class="scroll-section" id="section-3"></div>
+        <div class="scroll-section" id="section-4"></div>
+    </div>
+
+    <!-- PART 1: SPLIT ANIMATION -->
+    <div class="part-1-container" id="p1-container">
+        <!-- Layer 2: Right Side (Now Bottom Layer) -->
+        <div class="split-layer layer-right" id="p1-right">
+            <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/FSM/images_fsm/ohmy_right"
+                alt="FSM Right">
+        </div>
+        <!-- Layer 1: Left Side (Now Top Layer, Cyan Mask) -->
+        <div class="split-layer layer-left" id="p1-left">
+            <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/FSM/images_fsm/ohmy_left"
+                alt="FSM Left">
+        </div>
+    </div>
+
+    <!-- PART 2 -->
+    <div class="part-2-container" id="p2-container">
+        <!-- Floating Video Assets -->
+        <div class="floating-video" id="video-comp-1">
+            <video autoplay loop muted playsinline>
+                <source
+                    src="https://res.cloudinary.com/dytc1az1r/video/upload/f_auto,q_auto/website2026/project/FSM/images_fsm/Comp 1"
+                    type="video/mp4">
+            </video>
+        </div>
+        <div class="floating-video" id="video-comp-2">
+            <video autoplay loop muted playsinline>
+                <source
+                    src="https://res.cloudinary.com/dytc1az1r/video/upload/f_auto,q_auto/website2026/project/FSM/images_fsm/Comp 2"
+                    type="video/mp4">
+            </video>
+        </div>
+
+        <div class="part-2-content">
+            <div class="p2-poster">
+                <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/FSM/images_fsm/movieposter"
+                    alt="Movie Poster">
+            </div>
+            <div class="p2-text">
+                <h2>The Flying<br>Spaghetti<br>Monster
+                    <div id="title-video-container">
+                        <video id="title-video" muted playsinline>
+                            <source
+                                src="https://res.cloudinary.com/dytc1az1r/video/upload/f_auto,q_auto/website2026/project/FSM/images_fsm/Comp 2"
+                                type="video/mp4">
+                        </video>
+                    </div>
+                </h2>
+                <p>
+                    The Church of the Flying Spaghetti Monster is a satirical religion created to question dogma,
+                    authority, and blind belief.
+                    Naturally, the rebrand uses satire as its main design tool.
+                </p>
+                <p>
+                    Through visual identity and storytelling, the project embraces humor while staying intentional,
+                    every element exists for a reason.
+                    The result is a brand that doesn’t take itself seriously, but takes its message very seriously.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- PART 3 -->
+    <div class="part-3-container" id="p3-container">
+        <div class="collage-grid">
+            <!-- Row 1 -->
+            <video
+                src="https://res.cloudinary.com/dytc1az1r/video/upload/f_auto,q_auto/website2026/project/FSM/images_fsm/anim3"
+                autoplay loop muted playsinline class="c-item item-1"></video>
+            <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/FSM/images_fsm/brochure"
+                class="c-item item-2" alt="Brochure">
+            <video
+                src="https://res.cloudinary.com/dytc1az1r/video/upload/f_auto,q_auto/website2026/project/FSM/images_fsm/fsm balls"
+                autoplay loop muted playsinline class="c-item item-3"></video>
+
+            <!-- Row 2 -->
+            <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/FSM/images_fsm/poster"
+                class="c-item item-4" alt="Poster 1">
+            <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/FSM/images_fsm/poster2"
+                class="c-item item-5" alt="Poster 2">
+            <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/FSM/images_fsm/poster3"
+                class="c-item item-6" alt="Poster 3">
+
+            <!-- Row 3 -->
+            <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/FSM/images_fsm/typoarial"
+                class="c-item item-7" alt="Typography">
+            <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/FSM/images_fsm/logoex"
+                class="c-item item-8" alt="Logo Ex">
+            <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/FSM/images_fsm/logoex2"
+                class="c-item item-9" alt="Logo Ex 2">
+            <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/FSM/images_fsm/lescoumeurs"
+                class="c-item item-10" alt="Les Coumeurs">
+        </div>
+    </div>
+
+    <div class="part-4-container" id="p4-container">
+        <div class="part-4-content">
+            <h2>May you be<br>touched<br>BY<br>his Noodly<br>Appendage&nbsp;&nbsp;&nbsp;.</h2>
+        </div>
+
+        <!-- Top Right iPhone (Cropped) -->
+        <div class="mockup-wrapper mockup-tr">
+            <div class="phone-frame">
+                <img src="images_fsm/still1.png" alt="Insta Still 1">
+            </div>
+        </div>
+
+        <!-- Bottom Left iPhone (Cropped) -->
+        <div class="mockup-wrapper mockup-bl">
+            <div class="phone-frame">
+                <img src="images_fsm/still2.png" alt="Insta Still 2">
+            </div>
+        </div>
+
+        <!-- Center iPhone (Main) -->
+        <div class="mockup-wrapper mockup-center">
+            <div class="phone-frame">
+                <video autoplay loop muted playsinline>
+                    <source
+                        src="https://res.cloudinary.com/dytc1az1r/video/upload/f_auto,q_auto/website2026/project/FSM/images_fsm/insta"
+                        type="video/mp4">
+            </div>
+        </div>
+
+        <div class="insta-promo">
+            <h2>FSM is<br>now ON<br>INSTAAAA .</h2>
+        </div>
+    </div>
+
+    <script>
+        const p1Left = document.getElementById('p1-left');
+        const p1Right = document.getElementById('p1-right');
+        const p2Container = document.getElementById('p2-container');
+        const p3Container = document.getElementById('p3-container');
+        const p4Container = document.getElementById('p4-container');
+
+        const p2Content = document.querySelector('.part-2-content');
+
+        const v1 = document.getElementById('video-comp-1');
+        const v2 = document.getElementById('video-comp-2');
+
+        const titleVideoContainer = document.getElementById('title-video-container');
+        const titleVideo = document.getElementById('title-video');
+
+        let videosActive = false; // Legacy flag, might remove if not used
+
+        // Video State Management
+        let hasEnteredPart2 = false;
+
+        function restartVideos() {
+            // Play from start and ensure visibility for Corner Videos
+            [v1, v2].forEach(container => {
+                const video = container.querySelector('video');
+                if (video) {
+                    video.currentTime = 0;
+                    video.play().catch(e => console.log('Autoplay blocked', e));
+                    video.loop = false; // Ensure play once
+                }
+                container.style.opacity = 0.8;
+                container.style.transform = 'none';
+            });
+
+            // Title Video Logic: 2s Delay, Play Once, Freeze
+            if (titleVideo && titleVideoContainer) {
+                try {
+                    titleVideo.currentTime = 0;
+                    titleVideo.muted = true;
+                    titleVideo.pause();
+                } catch (e) { console.log('Video reset error', e); }
+
+                titleVideo.loop = false;
+
+                // Hide immediately
+                titleVideoContainer.style.transition = 'opacity 1s ease';
+                titleVideoContainer.style.opacity = '0';
+
+                // Wait 2s, then Reveal and Play
+                setTimeout(() => {
+                    titleVideoContainer.style.opacity = '1';
+                    titleVideo.play();
+                }, 2000);
+            }
+        }
+
+
+
+        // Easing function: easeInOutCubic
+        function easeInOutCubic(x) {
+            return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+        }
+
+        window.addEventListener('scroll', () => {
+            const scrollY = window.scrollY;
+            const windowHeight = window.innerHeight;
+
+            // --- ANIMATION PHASE 1: SPLIT (0 to 100vh) ---
+            // Calculate progress based on one full viewport height (Part 1 -> Part 2 transition)
+            let rawProgress = scrollY / windowHeight;
+
+            if (rawProgress < 1.1) { // Phase 1: Split & Zoom
+                if (rawProgress > 1) rawProgress = 1;
+
+
+                // Reset Phase 2/3/4 offsets if we scrolled back up
+                p2Container.style.transform = `translateY(0)`;
+                p3Container.style.transform = `translateY(100vh)`;
+                p4Container.style.transform = `translateY(100vh)`;
+                p4Container.style.opacity = 0;
+
+                // Apply Easing
+                const easedProgress = easeInOutCubic(rawProgress);
+
+                // 1. SPLIT ANIMATION
+                // Max movement: 100vw to ensure it completely clear the screen
+                const moveAmount = easedProgress * 100;
+
+                p1Left.style.transform = `translateX(-${moveAmount}vw)`;
+                p1Right.style.transform = `translateX(${moveAmount}vw)`;
+
+                // 2. ZOOM IN PART 2
+                // Start a bit later (40%) so the curtain is visibly open first
+                let zoomProgress = (easedProgress - 0.4) / 0.6;
+                if (zoomProgress < 0) zoomProgress = 0;
+
+                // Scale from 0.2 (very distant) to 1.0 (normal)
+                const scale = 0.2 + (zoomProgress * 0.8);
+
+                // Opacity also delayed so we don't see it frozen in back
+                p2Container.style.opacity = zoomProgress;
+                p2Content.style.transform = `scale(${scale})`;
+
+                // Hide Part 3 & 4
+                p3Container.style.opacity = 0;
+                // Checks for Part 2 entry
+                if (rawProgress > 0.95 && !hasEnteredPart2) {
+                    hasEnteredPart2 = true;
+                    restartVideos();
+                } else if (rawProgress < 0.5) {
+                    hasEnteredPart2 = false;
+                }
+
+            } else {
+                // Scrolled past Phase 1 - Keep fully open and zoomed
+                p1Left.style.transform = `translateX(-100vw)`;
+                p1Right.style.transform = `translateX(100vw)`;
+                p2Container.style.opacity = 1;
+                p2Content.style.transform = `scale(1)`;
+                p3Container.style.opacity = 1; // Visible, but might be off-screen
+
+                if (rawProgress < 2.05) {
+                    // --- PHASE 2: P2 -> P3 ---
+                    p4Container.style.opacity = 0;
+                    p4Container.style.transform = `translateY(100vh)`;
+
+                    let p2Progress = rawProgress - 1;
+                    if (p2Progress < 0) p2Progress = 0;
+                    if (p2Progress > 1) p2Progress = 1;
+
+                    const easedP2 = easeInOutCubic(p2Progress);
+                    const yMove = easedP2 * 100;
+
+                    p2Container.style.transform = `translateY(-${yMove}vh)`;
+                    p3Container.style.transform = `translateY(${100 - yMove}vh)`;
+
+                } else {
+                    // --- PHASE 3: P3 -> P4 ---
+                    p2Container.style.transform = `translateY(-100vh)`;
+                    p4Container.style.opacity = 1;
+
+                    let p3Progress = rawProgress - 2;
+                    if (p3Progress < 0) p3Progress = 0;
+
+                    const easedP3 = easeInOutCubic(p3Progress);
+                    const yMove3 = easedP3 * 100;
+
+                    p3Container.style.transform = `translateY(-${yMove3}vh)`;
+                    p4Container.style.transform = `translateY(${100 - yMove3}vh)`;
+                }
+            }
+        });
+
+
+    </script>
+</body>
+
+</html>

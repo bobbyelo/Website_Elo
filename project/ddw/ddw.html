@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DDW</title>
+    <link href="https://fonts.googleapis.com/css2?family=Godberg&display=swap" rel="stylesheet" />
+    <style>
+        /* --- HEADER SECTION --- */
+        #header-section {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 120px;
+            /* White Gradient Overlay - More Transparent */
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.7) 40%, transparent 100%);
+
+            border-bottom: none;
+            z-index: 10000;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 10px 40px 0 40px;
+            box-sizing: border-box;
+            pointer-events: none;
+        }
+
+        #header-section>* {
+            pointer-events: auto;
+        }
+
+        #project-nav {
+            display: flex;
+            gap: 30px;
+        }
+
+        /* Left-aligned name link */
+        .nav-item.name-link {
+            align-items: flex-start;
+            /* Bold with hover effect only for name */
+            font-weight: bold;
+        }
+
+        .nav-item.name-link::after {
+            content: attr(data-text);
+            font-weight: bold;
+            height: 0;
+            overflow: hidden;
+            visibility: hidden;
+        }
+
+        .nav-item.name-link:hover {
+            font-weight: normal;
+        }
+
+        .nav-item {
+            font-family: 'Godberg', 'Helvetica', sans-serif;
+            font-size: 1.2rem;
+            color: #be4574;
+            /* Pinkish color */
+            text-decoration: none;
+            line-height: 1.0;
+            transition: none;
+            /* No bold/hover for project titles */
+            font-weight: normal;
+        }
+
+        /* Active page title is bold */
+        .nav-item.active {
+            font-weight: bold;
+        }
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            /* Main scroll handled by snap container */
+            background-color: #fff;
+            font-family: sans-serif;
+        }
+
+        .snap-container {
+            height: 100vh;
+            width: 100%;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+            /* Hide scrollbar for a cleaner look */
+            scrollbar-width: none;
+            /* Firefox */
+            -ms-overflow-style: none;
+            /* IE and Edge */
+        }
+
+        /* Hide scrollbar for Chrome, Safari and Opera */
+        .snap-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scroll-scene {
+            display: none;
+        }
+
+        .logo-container {
+            position: absolute;
+            bottom: -5vh;
+            left: -2vw;
+            display: flex;
+            gap: 2px;
+            z-index: 15;
+        }
+
+        .ftf-container {
+            position: absolute;
+            top: -18vh;
+            right: -4vw;
+            display: flex;
+            z-index: 15;
+        }
+
+        .ddw-logo {
+            height: 400px;
+            width: auto;
+            opacity: 0;
+            animation: fadeIn 1s ease 1s forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .ftf-container .ddw-logo {
+            height: 480px;
+            filter: grayscale(100%) brightness(0);
+        }
+
+        /* Common Part Styles */
+        /* Common Part Styles */
+        .part {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            scroll-snap-align: start;
+            background-color: #fff;
+        }
+
+        /* PART 1 */
+        .part-1 {
+            z-index: 10;
+        }
+
+        .part-1.slide-up {
+            transform: translateY(-100vh);
+        }
+
+        .p1-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .p2-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .p2-text-container {
+            position: absolute;
+            top: 8vh;
+            left: 5vw;
+            width: 35vw;
+            font-family: 'Helvetica bold', sans-serif;
+            color: #ffffff;
+            opacity: 0;
+            transform: translateX(-30px);
+            transition: opacity 1s ease, transform 1s ease;
+            z-index: 25;
+        }
+
+        .part-2.active .p2-text-container {
+            opacity: 1;
+            transform: translateX(0);
+            transition-delay: 0.8s;
+        }
+
+        .p2-text-container h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .p2-text-container p {
+            font-size: 1.1rem;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        /* Mega Sequence Container for Part 2 */
+        .p2-mega-sequence {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 22;
+            /* Background layer */
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        .p2-mega-sequence .stack-img {
+            object-fit: cover;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Generated Keyframe Animation for 19 Items over 3.8s (0.2s each) */
+        @keyframes megaCycle {
+            0% {
+                opacity: 1;
+                z-index: 10;
+            }
+
+            5.26% {
+                opacity: 1;
+            }
+
+            5.27% {
+                opacity: 0;
+                z-index: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* Animation Application */
+        /* Order: Sec1->Sec6 (6), pas2,pas1,pas3 (3), A1 (6), A2 (4) = 19 items */
+        /* Duration: 19 * 0.2s = 3.8s */
+        .part-2.active .img-sq-1 {
+            animation: megaCycle 3.8s infinite;
+            animation-delay: 0s;
+        }
+
+        .part-2.active .img-sq-2 {
+            animation: megaCycle 3.8s infinite;
+            animation-delay: 0.2s;
+        }
+
+        .part-2.active .img-sq-3 {
+            animation: megaCycle 3.8s infinite;
+            animation-delay: 0.4s;
+        }
+
+        .part-2.active .img-sq-4 {
+            animation: megaCycle 3.8s infinite;
+            animation-delay: 0.6s;
+        }
+
+        .part-2.active .img-sq-5 {
+            animation: megaCycle 3.8s infinite;
+            animation-delay: 0.8s;
+        }
+
+        .part-2.active .img-sq-6 {
+            animation: megaCycle 3.8s infinite;
+            animation-delay: 1.0s;
+        }
+
+        .part-2.active .img-sq-7 {
+            animation: megaCycle 3.8s infinite;
+            animation-delay: 1.2s;
+        }
+
+        .part-2.active .img-sq-8 {
+            animation: megaCycle 3.8s infinite;
+            animation-delay: 1.4s;
+        }
+
+        .part-2.active .img-sq-9 {
+            animation: megaCycle 3.8s infinite;
+            animation-delay: 1.6s;
+        }
+
+        .part-2.active .img-sq-10 {
+            animation: megaCycle 3.8s infinite;
+            animation-delay: 1.8s;
+        }
+
+        .part-2.active .img-sq-11 {
+            animation: megaCycle 3.8s infinite;
+            animation-delay: 2.0s;
+        }
+
+        .part-2.active .img-sq-12 {
+            animation: megaCycle 3.8s infinite;
+            animation-delay: 2.2s;
+        }
+
+        .part-2.active .img-sq-13 {
+            animation: megaCycle 3.8s infinite;
+            animation-delay: 2.4s;
+        }
+
+        .part-2.active .img-sq-14 {
+            animation: megaCycle 3.8s infinite;
+            animation-delay: 2.6s;
+        }
+
+        .part-2.active .img-sq-15 {
+            animation: megaCycle 3.8s infinite;
+            animation-delay: 2.8s;
+        }
+
+        .part-2.active .img-sq-16 {
+            animation: megaCycle 3.8s infinite;
+            animation-delay: 3.0s;
+        }
+
+        .part-2.active .img-sq-17 {
+            animation: megaCycle 3.8s infinite;
+            animation-delay: 3.2s;
+        }
+
+        .part-2.active .img-sq-18 {
+            animation: megaCycle 3.8s infinite;
+            animation-delay: 3.4s;
+        }
+
+        .part-2.active .img-sq-19 {
+            animation: megaCycle 3.8s infinite;
+            animation-delay: 3.6s;
+        }
+
+        .stack-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: auto;
+            opacity: 0;
+            /* Removed transition for instant cut controlled by keyframes */
+        }
+
+
+
+        /* Animation when Part 2 is active */
+        .part-2.active .img-1 {
+            animation: stackCycle 0.75s infinite;
+            animation-delay: 0s;
+        }
+
+        .part-2.active .img-2 {
+            animation: stackCycle 0.75s infinite;
+            animation-delay: 0.25s;
+        }
+
+        .part-2.active .img-3 {
+            animation: stackCycle 0.75s infinite;
+            animation-delay: 0.50s;
+        }
+
+        @keyframes stackCycle {
+            0% {
+                opacity: 1;
+                z-index: 10;
+            }
+
+            33.33% {
+                opacity: 1;
+            }
+
+            33.34% {
+                opacity: 0;
+                z-index: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* Part 2 A1 Stack Container */
+        .p2-a1-container {
+            position: absolute;
+            width: 40vw;
+            height: auto;
+            top: 50vh;
+            left: 0vw;
+            z-index: 25;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        /* Animation when Part 2 is active for A1 series */
+        .part-2.active .img-a1-1 {
+            animation: stackCycle6 1.2s infinite;
+            animation-delay: 0s;
+        }
+
+        .part-2.active .img-a1-2 {
+            animation: stackCycle6 1.2s infinite;
+            animation-delay: 0.2s;
+        }
+
+        .part-2.active .img-a1-3 {
+            animation: stackCycle6 1.2s infinite;
+            animation-delay: 0.4s;
+        }
+
+        .part-2.active .img-a1-4 {
+            animation: stackCycle6 1.2s infinite;
+            animation-delay: 0.6s;
+        }
+
+        .part-2.active .img-a1-5 {
+            animation: stackCycle6 1.2s infinite;
+            animation-delay: 0.8s;
+        }
+
+        .part-2.active .img-a1-6 {
+            animation: stackCycle6 1.2s infinite;
+            animation-delay: 1.0s;
+        }
+
+        /* Part 2 Sec Stack Container (Full Screen) */
+        .p2-sec-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 22;
+            /* Behind text (25) but above bg */
+            pointer-events: none;
+            opacity: 0.2;
+        }
+
+        .p2-sec-container .stack-img {
+            object-fit: cover;
+            /* Ensure full coverage */
+            height: 100%;
+            width: 100%;
+        }
+
+        /* Animation for Sec series (Reuse stackCycle6) */
+        .part-2.active .img-sec-1 {
+            animation: stackCycle6 1.2s infinite;
+            animation-delay: 0s;
+        }
+
+        .part-2.active .img-sec-2 {
+            animation: stackCycle6 1.2s infinite;
+            animation-delay: 0.2s;
+        }
+
+        .part-2.active .img-sec-3 {
+            animation: stackCycle6 1.2s infinite;
+            animation-delay: 0.4s;
+        }
+
+        .part-2.active .img-sec-4 {
+            animation: stackCycle6 1.2s infinite;
+            animation-delay: 0.6s;
+        }
+
+        .part-2.active .img-sec-5 {
+            animation: stackCycle6 1.2s infinite;
+            animation-delay: 0.8s;
+        }
+
+        .part-2.active .img-sec-6 {
+            animation: stackCycle6 1.2s infinite;
+            animation-delay: 1.0s;
+        }
+
+
+
+        @keyframes stackCycle6 {
+            0% {
+                opacity: 1;
+                z-index: 10;
+            }
+
+            16.66% {
+                opacity: 1;
+            }
+
+            16.67% {
+                opacity: 0;
+                z-index: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* Part 3 Specific Styles */
+        .p3-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .p3-head-sequence {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 32;
+            /* Above bg */
+            pointer-events: none;
+            opacity: 0.2;
+        }
+
+        .p3-head-sequence .stack-img {
+            object-fit: cover;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 2 Item Cycle: 0.4s total (0.2s per image) */
+        @keyframes headCycle {
+            0% {
+                opacity: 1;
+                z-index: 10;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            50.01% {
+                opacity: 0;
+                z-index: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        .part-3.active .img-head-1 {
+            animation: headCycle 0.4s infinite;
+            animation-delay: 0s;
+        }
+
+        .part-3.active .img-head-2 {
+            animation: headCycle 0.4s infinite;
+            animation-delay: 0.2s;
+        }
+
+        /* Part 3 Video Sequence */
+        .p3-video-sequence {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 34;
+            /* Above head sequence (32) */
+            pointer-events: none;
+            opacity: 0.2;
+        }
+
+        .p3-video-sequence video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+        }
+
+        /* 3 Videos Cycle: 4.5s total (1.5s per video) */
+        @keyframes videoCycle {
+            0% {
+                opacity: 1;
+                z-index: 10;
+            }
+
+            33.33% {
+                opacity: 1;
+            }
+
+            33.34% {
+                opacity: 0;
+                z-index: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        .part-3.active .vid-1 {
+            animation: videoCycle 4.5s infinite;
+            animation-delay: 0s;
+        }
+
+        .part-3.active .vid-2 {
+            animation: videoCycle 4.5s infinite;
+            animation-delay: 1.5s;
+        }
+
+        .part-3.active .vid-3 {
+            animation: videoCycle 4.5s infinite;
+            animation-delay: 3.0s;
+        }
+
+        /* PART 2 */
+        /* PART 2 */
+        .part-2 {
+            z-index: 20;
+        }
+
+        /* PART 3 */
+        .part-3 {
+            z-index: 30;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- HEADER SECTION -->
+    <div id="header-section">
+        <a href="../../intro.html" class="nav-item name-link" data-text="Eloise Lobmeyr">Eloise Lobmeyr</a>
+        <div id="project-nav">
+            <a href="../peanuts/peanut2.html" class="nav-item" data-text="Crafting Technologies">Crafting
+                Technologies</a>
+            <a href="#" class="nav-item" data-text="CPS">CPS</a>
+            <a href="ddw.html" class="nav-item active" data-text="Design Dutch Week">Design Dutch Week</a>
+            <a href="../FSM/spaghetti.html" class="nav-item" data-text="Flying
+                spaghetti monster">Flying
+                spaghetti monster</a>
+        </div>
+    </div>
+
+    <div class="snap-container">
+        <!-- PART 1 -->
+        <div class="part part-1" id="p1">
+            <img class="p1-image"
+                src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/front"
+                alt="DDW Front">
+            <div class="logo-container">
+                <img class="ddw-logo"
+                    src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/logo"
+                    alt="Do Not Touch - DDW Logo">
+            </div>
+            <div class="ftf-container">
+                <img class="ddw-logo"
+                    src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/ftflogo"
+                    alt="FTF Logo">
+            </div>
+        </div>
+
+        <!-- PART 2 -->
+        <div class="part part-2" id="p2">
+            <img class="p2-image"
+                src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/thebg"
+                alt="Part 2 Background">
+            <div class="p2-text-container">
+                <h2>Stretch and Release</h2>
+                <p>A series of handbags developed through experimentation with 3D printing directly onto textile
+                    surfaces.
+                    By stretching the fabric during printing and releasing it afterward, tensions are revealed, forming
+                    a
+                    three-dimensional textile structure.</p>
+                <p>This ongoing exploration questions how garments can be designed with greater care by extending their
+                    life, value, and relationship to the body.</p>
+            </div>
+            <div class="p2-mega-sequence">
+                <!-- 1. Sec Series -->
+                <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/sec1"
+                    class="stack-img img-sq-1" alt="S1">
+                <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/Sec2"
+                    class="stack-img img-sq-2" alt="S2">
+                <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/Sec3"
+                    class="stack-img img-sq-3" alt="S3">
+                <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/Sec4"
+                    class="stack-img img-sq-4" alt="S4">
+                <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/Sec5"
+                    class="stack-img img-sq-5" alt="S5">
+                <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/Sec6"
+                    class="stack-img img-sq-6" alt="S6">
+
+                <!-- 2. Pas Series (Ordered: pas2, pas1, pas3) -->
+                <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/pas2"
+                    class="stack-img img-sq-7" alt="P2">
+                <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/pas1"
+                    class="stack-img img-sq-8" alt="P1">
+                <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/pas3"
+                    class="stack-img img-sq-9" alt="P3">
+
+                <!-- 3. A1 Series -->
+                <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/A1 (1)"
+                    class="stack-img img-sq-10" alt="A1">
+                <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/A1 (2)"
+                    class="stack-img img-sq-11" alt="A2">
+                <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/A1 (3)"
+                    class="stack-img img-sq-12" alt="A3">
+                <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/A1 (4)"
+                    class="stack-img img-sq-13" alt="A4">
+                <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/A1 (5)"
+                    class="stack-img img-sq-14" alt="A5">
+                <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/A1 (6)"
+                    class="stack-img img-sq-15" alt="A6">
+
+                <!-- 4. A2 Series -->
+                <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/A2 (1)"
+                    class="stack-img img-sq-16" alt="A2-1">
+                <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/A2 (2)"
+                    class="stack-img img-sq-17" alt="A2-2">
+                <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/A2 (3)"
+                    class="stack-img img-sq-18" alt="A2-3">
+                <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/A2 (4)"
+                    class="stack-img img-sq-19" alt="A2-4">
+            </div>
+        </div>
+
+        <!-- PART 3 -->
+        <div class="part part-3" id="p3">
+            <img class="p3-image"
+                src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/thebg"
+                alt="Part 3 Background">
+            <div class="p3-head-sequence">
+                <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/head (1)"
+                    class="stack-img img-head-1" alt="Head 1">
+                <img src="https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/head (2)"
+                    class="stack-img img-head-2" alt="Head 2">
+            </div>
+            <div class="p3-video-sequence">
+                <video class="vid-1"
+                    src="https://res.cloudinary.com/dytc1az1r/video/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/VID (1)"
+                    autoplay loop muted playsinline></video>
+                <video class="vid-2"
+                    src="https://res.cloudinary.com/dytc1az1r/video/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/VID (2)"
+                    autoplay loop muted playsinline></video>
+                <video class="vid-3"
+                    src="https://res.cloudinary.com/dytc1az1r/video/upload/f_auto,q_auto/website2026/project/ddw/images_ddw/VID (3)"
+                    autoplay loop muted playsinline></video>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const parts = document.querySelectorAll('.part');
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('active');
+                        } else {
+                            entry.target.classList.remove('active');
+                        }
+                    });
+                }, {
+                    threshold: 0.5 // Trigger when 50% of the part is visible
+                });
+
+                parts.forEach(part => {
+                    observer.observe(part);
+                });
+            });
+        </script>
+</body>
+
+</html>

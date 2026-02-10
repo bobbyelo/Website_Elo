@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Intro - Snake Gallery</title>
+    <link href="https://fonts.googleapis.com/css2?family=Godberg&display=swap" rel="stylesheet" />
+    <style>
+        /* -----------------------------------------------------------------
+       1. CORE AESTHETIC - COPIED FROM PROJECTPAGE
+       ----------------------------------------------------------------- */
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', sans-serif;
+            background-color: white;
+            /* Grid Background - Match index.html */
+            background-image:
+                linear-gradient(#eee 1px, transparent 1px),
+                linear-gradient(90deg, #eee 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        /* Slide-up animation applied via JS if coming from homepage */
+        .animate-slide {
+            animation: slideUp 0.5s ease-out forwards;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100vh);
+            }
+
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        /* HEADER SECTION */
+        #header-section {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background: transparent;
+            border-bottom: none;
+            z-index: 10000;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 10px 40px 0 40px;
+            box-sizing: border-box;
+            pointer-events: none;
+        }
+
+        #header-section>* {
+            pointer-events: auto;
+        }
+
+        /* Nav Items matched to Intro Blue */
+        .nav-item {
+            font-family: 'Godberg', 'Helvetica', sans-serif;
+            font-size: 1.2rem;
+            color: blue;
+            text-decoration: none;
+            line-height: 1.0;
+            transition: none;
+
+            /* Stable Layout Logic */
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            /* Always Bold */
+        }
+
+        /* Left-aligned name link - no centering, not clickable on intro page */
+        .nav-item.name-link {
+            align-items: flex-start;
+            pointer-events: none;
+            cursor: default;
+        }
+
+        /* Reserve Width based on Bold Text */
+        .nav-item::after {
+            content: attr(data-text);
+            font-weight: bold;
+            height: 0;
+            overflow: hidden;
+            visibility: hidden;
+        }
+
+        .name {
+            position: absolute;
+            top: 60px;
+            /* Below Header */
+            left: 40px;
+            font-size: 2rem;
+            color: blue;
+            font-family: 'Godberg', 'Helvetica', sans-serif;
+            text-align: left;
+            line-height: 1.0;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        /* Portfolio text can stay or be part of header? User said "text portfolio" font size. 
+           "place the project names... on the top... using the font size of the text portfolio"
+           The portfolio text itself might need to move or stay floating?
+           "Make as if... 2 sections" implies structure. I'll hide the floating portfolio text or integrate it.
+           User didn't explicitly say remove "Portfolio Design Engineering".
+           I'll keep it absolute in the "Game Section" if it doesn't conflict.
+        */
+
+        #project-nav {
+            position: relative;
+            /* Reset from absolute */
+            top: auto;
+            left: auto;
+            right: auto;
+            display: flex;
+            gap: 30px;
+        }
+
+        /* SNAKE CANVAS ADJUSTMENT */
+        /* Snake moves in 'pixels' based on window size.
+           We need to block the top 80px (4 grid rows of 20px).
+        */
+
+
+        /* -----------------------------------------------------------------
+       2. SNAKE STYLING
+       ----------------------------------------------------------------- */
+        .snake-segment {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background-color: blue;
+            border: 1px solid black;
+            z-index: 5;
+            image-rendering: pixelated;
+        }
+
+        /* ... (rest of snake styles unchanged) ... */
+
+
+        .snake-head {
+            background-color: red;
+            z-index: 6;
+        }
+
+        .snake-tongue {
+            position: absolute;
+            width: 4px;
+            height: 10px;
+            background-color: red;
+            left: 8px;
+            top: -10px;
+            animation: flicker 0.2s infinite;
+        }
+
+        @keyframes flicker {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* -----------------------------------------------------------------
+       3. TARGET IMAGE STYLING
+       ----------------------------------------------------------------- */
+        #target-container {
+            position: absolute;
+            border: none;
+            box-shadow: none;
+            background: transparent;
+            z-index: 10;
+            /* Text(20) > Target(10) > Snake(5) > Bg(0) */
+            transition: transform 0.2s, opacity 0.2s;
+            display: none;
+            /* Hidden until game start */
+        }
+
+        #target-container img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            /* Full fit usually implies seeing it all */
+        }
+
+        /* When "eaten" */
+        .eaten {
+            transform: scale(0);
+            opacity: 0;
+        }
+
+        /* --- HOMEPAGE TEXT STYLES --- */
+        /* --- HOMEPAGE TEXT STYLES --- */
+        .name {
+            position: absolute;
+            top: 30px;
+            /* Higher */
+            left: 40px;
+            font-size: 2rem;
+            color: blue;
+            font-family: 'Godberg', 'Helvetica', sans-serif;
+            z-index: 20;
+            text-align: left;
+            line-height: 1.0;
+            pointer-events: none;
+        }
+
+        #play-button-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 340px;
+            /* 17 blocks * 20px */
+            height: 340px;
+            /* 17 blocks * 20px */
+            z-index: 1000;
+            cursor: pointer;
+            /* Display grid removed from container, moved to wrapper */
+            /* display: grid; */
+            /* grid-template-columns: repeat(17, 20px); */
+            /* grid-template-rows: repeat(17, 20px); */
+            display: flex;
+            /* Center the text */
+            justify-content: center;
+            align-items: center;
+            transition: all 1s ease-in-out;
+            /* Smooth transition for move/shrink */
+        }
+
+        /* Minimized State (Top Right) */
+        /* Minimized State (Top Right) */
+        /* Minimized State (Top Right) */
+        /* Minimized State (Top Right) */
+        #play-button-container.play-button-minimized {
+            top: 25px !important;
+            /* Lowered 10px */
+            /* Target: Right Edge at 40px */
+            left: calc(100% - 380px) !important;
+            transform: scale(0.2) !important;
+            transform-origin: top right;
+            cursor: pointer;
+        }
+
+        /* Apply Red Stroke only to pixels, not text */
+        #play-button-container.play-button-minimized #play-pixels-wrapper {
+            filter: drop-shadow(0 0 1px red) drop-shadow(0 0 1px red);
+        }
+
+        /* Dropdown internal to Play Button */
+        /* Slide-in Menu internal to Play Button */
+        /* Slide-in Menu internal to Play Button */
+        /* Slide-in Menu internal to Play Button */
+        #play-button-container .dropdown-content {
+            display: block;
+            opacity: 0;
+            pointer-events: none;
+            position: absolute;
+            top: 475px;
+            /* Aligned visually to 120px screen Y (25 + 475*0.2) */
+            right: -30px;
+            /* Push right to touch screen edge (compensate for button padding/margin) */
+
+            background-color: transparent;
+            min-width: 400px;
+            /* Wide enough for large text */
+            z-index: 10000;
+
+            /* Text Styling matching 'Portfolio' reduced size */
+            text-align: right;
+            /* Aligned to Right */
+            font-family: 'Godberg', 'Helvetica', sans-serif;
+            font-size: 1.2rem;
+            /* Reduced size (2rem * 0.6) */
+            line-height: 1.0;
+
+            /* Counter-scale: Parent 0.2 -> Child 5 */
+            transform: scale(5);
+            transform-origin: top right;
+            white-space: nowrap;
+            transition: opacity 0.5s ease 1s;
+        }
+
+        /* Show menu when minimized */
+        #play-button-container.play-button-minimized .dropdown-content {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(5);
+        }
+
+        #play-button-container:not(.play-button-minimized):hover .retro-btn {
+            color: blue;
+            border-color: blue;
+            text-shadow: 0 0 10px blue;
+            box-shadow: 0 0 10px blue;
+        }
+
+        .retro-btn {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 80px;
+            font-weight: bold;
+            color: red;
+            background: transparent;
+            border: 4px solid red;
+            padding: 20px 40px;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            text-shadow: 0 0 10px red;
+            box-shadow: 0 0 10px red, inset 0 0 10px red;
+            animation: blink 1.5s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .play-pixel {
+            width: 20px;
+            height: 20px;
+            background-color: red;
+            transition: background-color 0.1s ease;
+            /* Base transition */
+        }
+
+        /* Removed old hover logic for pixels */
+
+
+        #subtitle.text-slide-out {
+            font-size: 1rem !important;
+            /* Scale down on spot */
+            /* Keep original positioning (top 80%, left 11vw) */
+        }
+
+        /* -----------------------------------------------------------------
+       4. NAVIGATION
+       ----------------------------------------------------------------- */
+        #top-nav {
+            position: absolute;
+            top: 3vh;
+            left: 0;
+            width: 100%;
+            padding: 0 40px;
+            box-sizing: border-box;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            /* mix-blend-mode: difference; */
+        }
+
+        /* DROPDOWN MENU STYLES */
+        .home-menu-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: transparent;
+            /* Or white? User wants aesthetics. */
+            min-width: 200px;
+            z-index: 10000;
+            text-align: right;
+            padding-top: 10px;
+        }
+
+        .home-menu-container:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-item {
+            display: block;
+            color: blue !important;
+            /* Blue Text */
+            text-decoration: none;
+            margin-bottom: 5px;
+            /* Less spacing */
+            background: transparent;
+            padding: 0;
+            transition: color 0.2s;
+        }
+
+        .dropdown-item:hover {
+            color: red !important;
+            /* Turn Red on Hover */
+        }
+
+        #controls-hint {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            font-family: 'Helvetica', sans-serif;
+            font-size: 14px;
+            color: #ccc;
+            z-index: 100;
+            pointer-events: none;
+            text-align: right;
+            opacity: 0.7;
+        }
+
+        .nav-link {
+            font-family: 'Helvetica', sans-serif;
+            font-size: 1.2rem;
+            text-decoration: none;
+            color: blue;
+            transition: color 0.2s;
+            text-align: center;
+        }
+
+        .nav-link:hover {
+            color: red;
+        }
+
+        .nav-link img {
+            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            /* Smoother bezier */
+        }
+
+        .nav-link:hover img {
+            transform: scale(1.2);
+            /* Slightly larger for visible effect */
+        }
+
+        /* RETRO WINDOW STYLES */
+        .window-frame {
+            position: fixed;
+            bottom: 5%;
+            right: 5%;
+            width: 300px;
+            height: 200px;
+            background-color: #c0c0c0;
+            border: 2px solid;
+            border-color: #dfdfdf #404040 #404040 #dfdfdf;
+            box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            z-index: 9999;
+            user-select: none;
+            cursor: pointer;
+        }
+
+        .title-bar {
+            height: 24px;
+            background: #000080;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 2px 4px;
+        }
+
+        .title-text {
+            font-weight: bold;
+            font-family: 'MS Sans Serif', sans-serif;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        .window-body {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid;
+            border-color: #808080 #fff #fff #808080;
+            background: white;
+            margin: 4px;
+            font-family: 'MS Sans Serif', 'Arial', sans-serif;
+            font-size: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        #score-display {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            font-family: 'Helvetica', sans-serif;
+            font-size: 24px;
+            color: blue;
+            z-index: 1000;
+            pointer-events: none;
+            text-align: right;
+            font-weight: bold;
+            display: none;
+            /* Hidden until game expands? Or always visible? */
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVIGATION -->
+    <nav id="top-nav">
+        <!-- Spacer to fill layout -->
+        <div style="flex-grow: 1;"></div>
+        <!-- Home Image REMOVED. Nav is now empty/spacer only. -->
+    </nav>
+
+    <!-- SNAKE CONTAINER -->
+    <div id="snake-container"></div>
+
+    <!-- GAME CONTROLS (Centered) -->
+    <div class="game-controls">
+        <div class="arrow-keys">
+            <div class="arrow-row">
+                <div class="arrow-key">↑</div>
+            </div>
+            <div class="arrow-row">
+                <div class="arrow-key">←</div>
+                <div class="arrow-key">↓</div>
+                <div class="arrow-key">→</div>
+            </div>
+        </div>
+        <button class="play-button" id="play-btn">▶ PLAY</button>
+    </div>
+
+    <!-- HEADER SECTION -->
+    <div id="header-section">
+        <a href="intro.html" class="nav-item name-link" data-text="Eloise Lobmeyr">Eloise Lobmeyr</a>
+        <div id="project-nav">
+            <a href="project/peanuts/peanut2.html" class="nav-item" data-text="Crafting Technologies">Crafting
+                Technologies</a>
+            <a href="#" class="nav-item" data-text="CPS">CPS</a>
+            <a href="project/ddw/ddw.html" class="nav-item" data-text="Design Dutch Week">Design Dutch
+                Week</a>
+            <a href="project/FSM/spaghetti.html" class="nav-item" data-text="Flying spaghetti monster">Flying
+                spaghetti monster</a>
+        </div>
+    </div>
+
+
+
+    <!-- PORTFOLIO TEXT (Floating below header) -->
+    <div class="portfolio-text">
+        <br>Portfolio<br>Design Engineering
+    </div>
+
+    <div id="score-display">SCORE: 0</div>
+
+    <!-- CONTACT DETAILS -->
+    <div class="contact-details">
+        <a href="https://www.linkedin.com/in/eloiselobmeyr" target="_blank">
+            <svg class="linkedin-logo" viewBox="0 0 24 24" fill="blue" xmlns="http://www.w3.org/2000/svg">
+                <path
+                    d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+            </svg>
+        </a><br>
+        + 33 7 66 66 87 59<br>
+        <a href="mailto:eloise.lobmeyr25@imperial.ac.uk">eloise.lobmeyr25@imperial.ac.uk</a>
+    </div>
+
+    <style>
+        .portfolio-text {
+            position: fixed;
+            top: 32px;
+            left: 40px;
+            font-size: 1.2rem;
+            color: blue;
+            font-family: 'Godberg', 'Helvetica', sans-serif;
+            z-index: 20;
+            text-align: left;
+            line-height: 1.0;
+            pointer-events: none;
+        }
+
+        #score-display {
+            position: fixed;
+            bottom: 10px;
+            right: 40px;
+            font-family: 'Godberg', 'Helvetica', sans-serif;
+            font-size: 1.2rem;
+            color: blue;
+            z-index: 1000;
+            pointer-events: none;
+            text-align: right;
+            font-weight: normal;
+            display: block;
+        }
+
+        /* Contact Details */
+        .contact-details {
+            position: fixed;
+            bottom: 10px;
+            left: 40px;
+            font-family: 'Godberg', 'Helvetica', sans-serif;
+            font-size: 1.2rem;
+            color: blue;
+            z-index: 1000;
+            text-align: left;
+            line-height: 1.4;
+            font-weight: normal;
+        }
+
+        .contact-details a {
+            color: blue;
+            text-decoration: none;
+            transition: font-weight 0.15s ease;
+            font-weight: normal;
+        }
+
+        .contact-details a:hover {
+            font-weight: bold;
+        }
+
+        .linkedin-logo {
+            width: 1.2rem;
+            height: 1.2rem;
+            vertical-align: middle;
+            display: inline-block;
+        }
+
+        /* Game Controls */
+        .game-controls {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .arrow-keys {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .arrow-row {
+            display: flex;
+            gap: 5px;
+        }
+
+        .arrow-key {
+            width: 40px;
+            height: 40px;
+            border: 2px solid blue;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: blue;
+            font-weight: bold;
+            user-select: none;
+        }
+
+        .play-button {
+            padding: 10px 30px;
+            font-family: 'Godberg', 'Helvetica', sans-serif;
+            font-size: 1.2rem;
+            color: white;
+            background: blue;
+            border: 2px solid blue;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.15s ease;
+        }
+
+        .play-button:hover {
+            background: white;
+            color: blue;
+        }
+
+        .play-button:active {
+            transform: scale(0.95);
+        }
+
+        /* Hide controls when game is active */
+        .game-controls.hidden {
+            display: none;
+        }
+
+        /* Duplicate nav-item styles removed - using main definition above */
+    </style>
+
+
+    <!-- TARGET IMAGE -->
+    <div id="target-container">
+        <img id="target-img" src="" alt="Target">
+    </div>
+
+    <script>
+
+
+        const imagePaths = [
+            //"project/peanuts/images_peanuts/beaubag%20(5).jpg", // REMOVED
+            "https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/Lamps%20&%20chairs/blue%20furniture%20final",
+            "https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/Lamps%20&%20chairs/chairtable",
+            "https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/Lamps%20&%20chairs/exhiblamp",
+            "https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/Lamps%20&%20chairs/fond%20journey",
+            "https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/Lamps%20&%20chairs/kellylamp",
+            "https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/Lamps%20&%20chairs/lamp",
+            "https://res.cloudinary.com/dytc1az1r/image/upload/f_auto,q_auto/website2026/project/Lamps%20&%20chairs/lampbg"
+        ];
+
+        // Auto-start game logic
+        let gameInterval = null;
+        function startGame() {
+            // Animate Portfolio Text
+            const portText = document.querySelector('.portfolio-text');
+            if (portText) portText.classList.add('minimized');
+
+            const targetContainer = document.getElementById('target-container');
+            if (targetContainer) targetContainer.style.display = 'block';
+
+            if (!gameInterval) {
+                spawnTarget(); // Ensure first target is valid
+                gameInterval = setInterval(step, 100);
+            }
+            try { window.focus(); } catch (e) { }
+        }
+
+        // Game will start when play button is clicked (not auto-start)
+
+
+
+        // --- SNAKE LOGIC ---
+        const snakeContainer = document.getElementById("snake-container");
+        const targetContainer = document.getElementById("target-container");
+        const targetImg = document.getElementById("target-img");
+
+        const segmentSize = 20;
+        const snake = [{ x: 0, y: 0 }]; // Head
+        let direction = { x: 1, y: 0 };
+        let snakeLength = 5;
+
+        // Target State
+        let target = { x: 10, y: 10, w: 5, h: 5 }; // Grid units (w/h are size in grid cells)
+        let WanderState = { active: false, x: 0, y: 0, ticks: 0 };
+        let currentImgIndex = 0;
+
+        // Init Snake
+        const cols = Math.ceil(window.innerWidth / segmentSize);
+        const rows = Math.ceil(window.innerHeight / segmentSize);
+
+        // Initial Position: Middle of Screen
+        snake[0].x = Math.floor(cols / 2);
+        snake[0].y = Math.floor(rows / 2);
+        direction = { x: 1, y: 0 }; // Move Horizontal (Right)
+
+        // Game Bounds (Full Screen)
+        let gameBounds = {
+            minX: 0, maxX: cols,
+            minY: 2, maxY: rows // Reserve top 2 rows (40px) for header
+        };
+
+        // Show Score immediately
+        document.getElementById('score-display').style.display = 'block';
+
+        let score = 0;
+
+
+
+        // Control Logic
+        document.addEventListener('keydown', (e) => {
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                e.preventDefault(); // Prevent scrolling
+            }
+            // Allow all turns for responsiveness as requested ("whatever with the arrows")
+            switch (e.key) {
+                case 'ArrowUp':
+                    direction = { x: 0, y: -1 };
+                    break;
+                case 'ArrowDown':
+                    direction = { x: 0, y: 1 };
+                    break;
+                case 'ArrowLeft':
+                    direction = { x: -1, y: 0 };
+                    break;
+                case 'ArrowRight':
+                    direction = { x: 1, y: 0 };
+                    break;
+            }
+        });
+
+        function spawnTarget() {
+            // Next image
+            targetImg.src = imagePaths[currentImgIndex];
+
+            // Random size (9 to 24 grid cells) for ALL images
+            // And ensure fully inside the web (gameBounds)
+            const size = (Math.floor(Math.random() * 6) + 3) * 3;
+            target.w = size;
+            target.h = size;
+
+            // Normal Random Logic
+            target.x = Math.floor(Math.random() * (cols - target.w));
+            target.y = Math.floor(Math.random() * (rows - target.h));
+
+            // Validate Position logic...
+            let valid = false;
+            let attempts = 0;
+            while (!valid && attempts < 100) {
+                // Re-roll
+                target.x = Math.floor(Math.random() * (cols - target.w));
+                target.y = Math.floor(Math.random() * (rows - target.h));
+                const head = snake[0];
+                const cx = target.x + target.w / 2;
+                const cy = target.y + target.h / 2;
+                const dist = Math.hypot(cx - head.x, cy - head.y);
+                if (dist > 10) valid = true;
+                attempts++;
+            }
+
+            currentImgIndex = (currentImgIndex + 1) % imagePaths.length;
+
+            // Update DOM
+            targetContainer.style.width = (target.w * segmentSize) + 'px';
+            targetContainer.style.height = (target.h * segmentSize) + 'px';
+            targetContainer.style.left = (target.x * segmentSize) + 'px';
+            targetContainer.style.top = (target.y * segmentSize) + 'px';
+            targetContainer.classList.remove('eaten');
+        }
+
+        function drawSnake() {
+            snakeContainer.innerHTML = '';
+
+            snake.forEach((segment, index) => {
+                const el = document.createElement('div');
+                el.classList.add('snake-segment');
+                el.style.left = (segment.x * segmentSize) + 'px';
+                el.style.top = (segment.y * segmentSize) + 'px';
+
+                if (index === 0) {
+                    el.classList.add('snake-head');
+                    const tongue = document.createElement('div');
+                    tongue.classList.add('snake-tongue');
+                    if (direction.x === 1) tongue.style.transform = "rotate(90deg) translate(10px, -5px)";
+                    else if (direction.x === -1) tongue.style.transform = "rotate(-90deg) translate(10px, 5px)";
+                    else if (direction.y === 1) tongue.style.transform = "rotate(180deg) translate(0, 10px)";
+                    else if (direction.y === -1) tongue.style.transform = "rotate(0deg)";
+                    el.appendChild(tongue);
+                }
+                snakeContainer.appendChild(el);
+            });
+        }
+
+        function step() {
+            // Move Head
+            const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
+
+            // Bounds Check (Dynamic)
+            const gcols = gameBounds.maxX;
+            const grows = gameBounds.maxY;
+            const minX = gameBounds.minX;
+            const minY = gameBounds.minY;
+
+            // Constrain Wrap/Clamp
+            if (head.x >= gcols) head.x = minX;
+            if (head.x < minX) head.x = gcols - 1;
+            if (head.y >= grows) head.y = minY;
+            if (head.y < minY) head.y = grows - 1;
+
+            snake.unshift(head);
+
+            // Check Collision with Target
+            if (head.x >= target.x && head.x < target.x + target.w &&
+                head.y >= target.y && head.y < target.y + target.h) {
+
+                // EATEN!
+                targetContainer.classList.add('eaten');
+
+                // Add Score based on size (larger size = more points? or harder to miss = less? User said "depending on size", bigger is usually better/more points in arcade logic context, or maybe smaller is harder? User: "each picture is aditional points, depending on the size of the image that teh snake ate" - implies correlation. I'll make point = size * 10 or something).
+                // Actually, logic: bigger target is easier to hit?
+                // But bigger images take up more space.
+                // Let's optimize for satisfaction: Score += target.w * 10.
+
+                score += (target.w * 10);
+                document.getElementById('score-display').innerText = "SCORE: " + score;
+
+                spawnTarget();
+                snakeLength += 5; // Grow faster
+
+            } else {
+                // Trim tail
+                if (snake.length > snakeLength) {
+                    snake.pop();
+                }
+            }
+
+            drawSnake();
+        }
+
+        // Attempt to "pretend" a click to gain focus
+        try {
+            window.focus();
+            const fakeClick = new MouseEvent('click', {
+                view: window,
+                bubbles: true,
+                cancelable: true
+            });
+            document.body.dispatchEvent(fakeClick);
+        } catch (e) {
+            console.log("Auto-focus failed (browser restriction)");
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('animate') === 'true') {
+            document.body.classList.add('animate-slide');
+        }
+
+        const playBtn = document.getElementById('play-btn');
+        const gameControls = document.querySelector('.game-controls');
+
+        playBtn.addEventListener('click', () => {
+            if (!gameInterval) {
+                startGame();
+                gameControls.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+
+</html>
